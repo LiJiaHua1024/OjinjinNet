@@ -1,0 +1,21 @@
+OjinjinNet
+Copyright 2026 LiJiaHua1024
+
+This product includes software and fine-tuned / distilled derivative model weights
+built upon the following open-source pre-trained models:
+
+1. MiniRBT (`hfl/minirbt-h256`) & MacBERT (`hfl/chinese-macbert-base`) & RBT6 (`hfl/rbt6`)
+   Copyright (c) Joint Laboratory of HIT and iFLYTEK Research (HFL)
+   Licensed under the Apache License, Version 2.0.
+   https://github.com/ymcui/MacBERT
+   https://github.com/ymcui/MiniRBT
+
+2. BGE-small-zh-v1.5 (`BAAI/bge-small-zh-v1.5`)
+   Copyright (c) Beijing Academy of Artificial Intelligence (BAAI)
+   Licensed under the MIT License.
+   https://github.com/FlagOpen/FlagEmbedding
+
+3. Chinese-ELECTRA-180G (`hfl/chinese-electra-180g-base-discriminator`, used as offline distillation teacher)
+   Copyright (c) Joint Laboratory of HIT and iFLYTEK Research (HFL)
+   Licensed under the Apache License, Version 2.0.
+   https://github.com/ymcui/Chinese-ELECTRA

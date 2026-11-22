@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OjinjinNet · OjinjinBench-v1 端侧 AI 评论检测跑分总榜</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --fg: #f1f5f9;
+      --muted: #94a3b8;
+      --border: #334155;
+      --primary: #38bdf8;
+      --primary-fg: #082f49;
+      --success: #4ade80;
+      --warning: #fbbf24;
+      --error: #f87171;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f8fafc;
+        --card: #ffffff;
+        --fg: #0f172a;
+        --muted: #475569;
+        --border: #e2e8f0;
+        --primary: #0284c7;
+        --primary-fg: #ffffff;
+        --success: #16a34a;
+        --warning: #d97706;
+        --error: #dc2626;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg); color: var(--fg); line-height: 1.5;
+    }
+    .wrap { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+    .header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: var(--primary); color: var(--primary-fg); }
+    .tag { display: inline-block; padding: 1px 6px; border-radius: 5px; font-size: 11px; border: 1px solid var(--border); color: var(--muted); }
+    h1 { margin: 6px 0 4px; font-size: 22px; }
+    h2 { margin: 0 0 6px; font-size: 15px; }
+    .muted { color: var(--muted); font-size: 12px; }
+    .kpis { display: grid; grid-template-columns: repeat(3, minmax(110px, 1fr)); gap: 10px; }
+    .kpi { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; text-align: center; }
+    .kpi-v { font-size: 18px; font-weight: 700; margin: 2px 0; }
+    .controls { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: center; }
+    .btn-group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    button {
+      padding: 6px 11px; border-radius: 8px; font-size: 12px; font-weight: 500;
+      border: 1px solid var(--border); background: var(--bg); color: var(--fg); cursor: pointer;
+    }
+    button.active { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); }
+    .banner { margin-top: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { padding: 10px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    th { text-align: right; color: var(--muted); background: var(--bg); cursor: pointer; user-select: none; }
+    th:first-child, th:nth-child(2), td:first-child, td:nth-child(2) { text-align: left; }
+    td { text-align: right; font-variant-numeric: tabular-nums; }
+    tbody tr { cursor: pointer; }
+    tbody tr:hover, tbody tr.sel { background: var(--bg); }
+    .up { color: var(--success); font-weight: 600; }
+    .dn { color: var(--error); font-weight: 600; }
+    .grid2 { display: grid; grid-template-columns: repeat(12, 1fr); gap: 18px; }
+    .col5 { grid-column: span 5; }
+    .col7 { grid-column: span 7; }
+    @media (max-width: 900px) { .col5, .col7 { grid-column: span 12; } }
+    .bar-bg { width: 100%; height: 8px; border-radius: 99px; background: var(--bg); border: 1px solid var(--border); overflow: hidden; margin-top: 4px; }
+    .bar-fill { height: 100%; border-radius: 99px; }
+    .counts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 12px; color: var(--muted); }
+    .counts strong { color: var(--fg); }
+    .guides { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; margin-top: 10px; }
+    .guide-box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="card header">
+      <div>
+        <div><span class="badge">OjinjinNet v1.0.0 · OjinjinBench-v1</span> <span class="muted" style="margin-left:6px">1,310 条纯真实社区评论 · 视频/账号双重隔离 · 0% 合成</span></div>
+        <h1>OjinjinNet 端侧中文 AI 评论检测跑分总榜</h1>
+        <div class="muted">纯 CPU ONNX INT8 · 7 MB ~ 49 MB · SmoothQuant 无损量化 · 150 显性 AI + 160 隐蔽 AI + 617 高难真人 + 383 普通真人</div>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><div class="muted">Pro 纯文本 P99</div><div class="kpi-v up">83.2%</div><div class="muted">49.49 MB INT8</div></div>
+        <div class="kpi"><div class="muted">Pro 隐蔽 AI 召回</div><div class="kpi-v up">93.8%</div><div class="muted">纯文本 90.0%</div></div>
+        <div class="kpi"><div class="muted">Standard 主力</div><div class="kpi-v" style="color:var(--primary)">16.86 MB</div><div class="muted">20条仅 75 ms</div></div>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="controls">
+        <div class="btn-group">
+          <span class="muted" style="font-weight:600">赛道：</span>
+          <button data-track="all" class="track-btn">全部对比</button>
+          <button data-track="fusion" class="track-btn">端到端实战（+1KB 融合）</button>
+          <button data-track="text" class="track-btn">纯文本裸考（公平对标 0.xB）</button>
+        </div>
+        <div class="btn-group">
+          <span class="muted" style="font-weight:600">Overall 口径：</span>
+          <button data-preset="balanced" class="preset-btn">均衡实战</button>
+          <button data-preset="strict" class="preset-btn">严控误杀</button>
+          <button data-preset="stealth" class="preset-btn">专抓隐蔽 AI</button>
+        </div>
+      </div>
+      <div class="banner">
+        <span id="formula-text"></span>
+        <span style="color:var(--fg)">点击表头排序 · 点击行查看精确条数</span>
+      </div>
+    </section>
+
+    <section class="card" style="padding:0; overflow:hidden;">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>模型 / 赛道</th>
+              <th data-sort="overall">Overall <span class="up">↑</span></th>
+              <th data-sort="pr_auc">PR-AUC <span class="up">↑</span></th>
+              <th data-sort="r99">Recall@P99% <span class="up">↑</span></th>
+              <th data-sort="r95">Recall@P95% <span class="up">↑</span></th>
+              <th data-sort="stealth95">隐蔽AI召回 <span class="up">↑</span></th>
+              <th data-sort="hard_fpr95">难负误杀率 <span class="dn">↓</span></th>
+              <th data-sort="size">体积(MB) <span class="dn">↓</span></th>
+              <th data-sort="lat20">20条耗时 <span class="dn">↓</span></th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="grid2">
+      <section class="card col5">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:10px;">
+          <div>
+            <div class="muted">选中模型明细</div>
+            <h2 id="d-title" style="margin:2px 0 0"></h2>
+          </div>
+          <span id="d-badge" class="badge"></span>
+        </div>
+        <div id="d-bars" style="display:flex; flex-direction:column; gap:10px; font-size:12px;"></div>
+        <div id="d-counts" class="counts"></div>
+      </section>
+
+      <section class="card col7">
+        <h2>体积 vs Overall 帕累托效率图（越往左上越优）</h2>
+        <div class="muted" style="margin-bottom:8px">横轴为磁盘体积对数刻度：对比 7–49 MB 纯 CPU 小模型与典型 0.5B–0.6B 端侧模型区间（350–614 MB）</div>
+        <div style="height:265px; width:100%"><canvas id="pareto" style="width:100%; height:100%; display:block"></canvas></div>
+      </section>
+    </div>
+
+    <section class="card">
+      <h2>评测指标速查</h2>
+      <div class="guides">
+        <div class="guide-box"><strong>PR-AUC (↑)</strong><div class="muted">不固定阈值的综合排序能力，类别不平衡场景最诚实。</div></div>
+        <div class="guide-box"><strong>Recall@P99% (↑)</strong><div class="muted">每过滤 100 条最多误杀 1 条真人时的召回率，静默过滤核心红线。</div></div>
+        <div class="guide-box"><strong>隐蔽 AI 召回 (↑)</strong><div class="muted">160 条去掉特征关键词、规则得 0 分的新式 AI 评论捕获率。</div></div>
+        <div class="guide-box"><strong>难负真人误杀率 (↓ 唯一越低越好)</strong><div class="muted">617 条科普/影评/反串长评真人的错杀率，检验是否一刀切。</div></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const MODELS = [
+      { id: "pro_fus", name: "OjinjinNet-Pro (INT8 + 1KB 融合)", short: "Pro+融合", track: "fusion", badge: "旗舰 Pro", params: 51.19, size: 49.49, lat1: 13.14, lat20: 240.0, pr_auc: 0.9926, r99: 0.8323, r95: 0.9677, f05: 0.9658, f1: 0.9634, stealth95: 0.9375, hard_fpr95: 0.0227, caught99: 258, fp99: 2, caught95: 300, fp95: 15 },
+      { id: "std_fus", name: "OjinjinNet-Standard (INT8 + 1KB 融合)", short: "Standard+融合", track: "fusion", badge: "默认主力", params: 17.33, size: 16.86, lat1: 4.37, lat20: 75.1, pr_auc: 0.9917, r99: 0.8387, r95: 0.9516, f05: 0.9680, f1: 0.9578, stealth95: 0.9062, hard_fpr95: 0.0211, caught99: 260, fp99: 2, caught95: 295, fp95: 15 },
+      { id: "lite_fus", name: "OjinjinNet-Lite (INT8 + 1KB 融合)", short: "Lite+融合", track: "fusion", badge: "7MB 极速", params: 7.03, size: 7.05, lat1: 2.54, lat20: 34.9, pr_auc: 0.9896, r99: 0.8548, r95: 0.9452, f05: 0.9631, f1: 0.9510, stealth95: 0.9062, hard_fpr95: 0.0211, caught99: 265, fp99: 2, caught95: 293, fp95: 15 },
+      { id: "pro_text", name: "OjinjinNet-Pro (SmoothQuant INT8 纯文本)", short: "Pro 纯文本", track: "text", badge: "纯文本冠军", params: 51.19, size: 49.49, lat1: 13.14, lat20: 240.0, pr_auc: 0.9785, r99: 0.8323, r95: 0.9226, f05: 0.9647, f1: 0.9394, stealth95: 0.9000, hard_fpr95: 0.0178, caught99: 258, fp99: 2, caught95: 286, fp95: 15 },
+      { id: "std_text", name: "OjinjinNet-Standard (INT8 纯文本)", short: "Standard 纯文本", track: "text", badge: "17MB 纯文本", params: 17.33, size: 16.86, lat1: 4.37, lat20: 75.1, pr_auc: 0.9721, r99: 0.6419, r95: 0.8742, f05: 0.9436, f1: 0.9167, stealth95: 0.8500, hard_fpr95: 0.0162, caught99: 199, fp99: 2, caught95: 271, fp95: 14 },
+      { id: "lite_text", name: "OjinjinNet-Lite (INT8 纯文本)", short: "Lite 纯文本", track: "text", badge: "7MB 纯文本", params: 7.03, size: 7.05, lat1: 2.54, lat20: 34.9, pr_auc: 0.9535, r99: 0.1484, r95: 0.8290, f05: 0.9245, f1: 0.9006, stealth95: 0.8125, hard_fpr95: 0.0162, caught99: 46, fp99: 0, caught95: 257, fp95: 13 },
+      { id: "teacher", name: "离线 12 层蒸馏教师 (ELECTRA-180g-base FP32 参考)", short: "12L教师(390MB)", track: "text", badge: "离线教师参考", params: 102.3, size: 390.0, lat1: 42.0, lat20: 780.0, pr_auc: 0.9853, r99: 0.7290, r95: 0.9258, f05: 0.9547, f1: 0.9467, stealth95: 0.9187, hard_fpr95: 0.0227, caught99: 226, fp99: 2, caught95: 287, fp95: 15 },
+      { id: "rules", name: "启发式规则基线（含高阶账号保护）", short: "规则基线", track: "baseline", badge: "规则基线", params: 0, size: 0.05, lat1: 0.05, lat20: 1.0, pr_auc: 0.8821, r99: 0.3226, r95: 0.4258, f05: 0.8584, f1: 0.8414, stealth95: 0.0, hard_fpr95: 0.0097, caught99: 100, fp99: 1, caught95: 132, fp95: 6 },
+    ];
+    const PRESETS = {
+      balanced: { label: "Overall = 30% PR-AUC + 30% Recall@P99% + 25% 隐蔽AI召回 + 15% (1 − 难负误杀率)", w: { pr: 0.30, r99: 0.30, st: 0.25, safe: 0.15 } },
+      strict:   { label: "Overall（严控误杀）= 20% PR-AUC + 50% Recall@P99% + 10% 隐蔽AI召回 + 20% (1 − 难负误杀率)", w: { pr: 0.20, r99: 0.50, st: 0.10, safe: 0.20 } },
+      stealth:  { label: "Overall（专抓隐蔽AI）= 25% PR-AUC + 15% Recall@P99% + 50% 隐蔽AI召回 + 10% (1 − 难负误杀率)", w: { pr: 0.25, r99: 0.15, st: 0.50, safe: 0.10 } },
+    };
+    let track = "all", preset = "balanced", sortKey = "overall", sortAsc = false, selId = "pro_fus";
+    const ov = (m) => { const w = PRESETS[preset].w; return 100 * (w.pr * m.pr_auc + w.r99 * m.r99 + w.st * m.stealth95 + w.safe * (1 - m.hard_fpr95)); };
+    const pct = (v, d = 1) => (v * 100).toFixed(d) + "%";
+
+    function render() {
+      document.querySelectorAll(".track-btn").forEach((b) => b.classList.toggle("active", b.dataset.track === track));
+      document.querySelectorAll(".preset-btn").forEach((b) => b.classList.toggle("active", b.dataset.preset === preset));
+      document.getElementById("formula-text").textContent = PRESETS[preset].label;
+
+      const list = MODELS.filter((m) => track === "all" || m.track === track || m.track === "baseline")
+        .map((m) => ({ ...m, overall: ov(m) }))
+        .sort((a, b) => (sortAsc ? a[sortKey] - b[sortKey] : b[sortKey] - a[sortKey]));
+      if (!list.some((x) => x.id === selId)) selId = list[0].id;
+
+      const tb = document.getElementById("tbody");
+      tb.innerHTML = list.map((m, i) => {
+        const tg = m.id === "teacher" ? "离线教师" : (m.track === "fusion" ? "端到端" : (m.track === "text" ? "纯文本" : "规则"));
+        return `<tr data-id="${m.id}" class="${m.id === selId ? "sel" : ""}">
+          <td><strong>${i + 1}</strong></td>
+          <td><strong>${m.name}</strong> <span class="tag">${tg}</span></td>
+          <td><strong>${m.overall.toFixed(1)}</strong></td>
+          <td>${m.pr_auc.toFixed(4)}</td>
+          <td class="${m.r99 >= 0.8 ? "up" : ""}">${pct(m.r99)}</td>
+          <td>${pct(m.r95)}</td>
+          <td class="${m.stealth95 >= 0.9 ? "up" : (m.stealth95 === 0 ? "dn" : "")}">${pct(m.stealth95)}</td>
+          <td>${pct(m.hard_fpr95, 2)}</td>
+          <td>${m.params === 0 ? "0" : m.size.toFixed(m.size >= 100 ? 0 : 2)}</td>
+          <td>${m.params === 0 ? "<1 ms" : (m.id === "teacher" ? "离线GPU" : m.lat20.toFixed(0) + " ms")}</td>
+        </tr>`;
+      }).join("");
+      tb.querySelectorAll("tr").forEach((tr) => tr.addEventListener("click", () => { selId = tr.dataset.id; render(); }));
+
+      const cur = MODELS.find((x) => x.id === selId);
+      const curOv = ov(cur);
+      document.getElementById("d-title").textContent = cur.name;
+      document.getElementById("d-badge").textContent = cur.badge;
+      const bars = [
+        ["Overall 综合分 (↑)", curOv / 100, curOv.toFixed(1) + " / 100", "var(--primary)"],
+        ["PR-AUC (↑)", cur.pr_auc, cur.pr_auc.toFixed(4), "var(--primary)"],
+        ["Recall @ P99% (↑)", cur.r99, pct(cur.r99), "var(--success)"],
+        ["隐蔽 AI 召回 (↑)", cur.stealth95, pct(cur.stealth95), "var(--success)"],
+        ["难负真人保护率 (↑)", 1 - cur.hard_fpr95, pct(1 - cur.hard_fpr95, 2), "var(--warning)"],
+      ];
+      document.getElementById("d-bars").innerHTML = bars.map(([l, v, t, c]) =>
+        `<div><div style="display:flex;justify-content:space-between"><span class="muted">${l}</span><strong>${t}</strong></div>
+         <div class="bar-bg"><div class="bar-fill" style="width:${(v * 100).toFixed(1)}%;background:${c}"></div></div></div>`
+      ).join("");
+      document.getElementById("d-counts").innerHTML = `
+        <div>P99% 抓鱼：<strong>${cur.caught99} / 310</strong></div>
+        <div>P99% 误杀：<strong>${cur.fp99} / 1,000</strong></div>
+        <div>P95% 抓鱼：<strong>${cur.caught95} / 310</strong></div>
+        <div>P95% 误杀：<strong>${cur.fp95} / 1,000</strong></div>
+        <div>Best F0.5 / F1：<strong>${cur.f05.toFixed(4)} / ${cur.f1.toFixed(4)}</strong></div>
+        <div>单条 / 20条：<strong>${cur.params === 0 ? "<1 ms" : (cur.id === "teacher" ? "离线 FP32" : cur.lat1.toFixed(1) + " / " + cur.lat20.toFixed(0) + " ms")}</strong></div>`;
+      drawPareto();
+    }
+
+    function drawPareto() {
+      const c = document.getElementById("pareto");
+      const r = c.parentElement.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      c.width = Math.max(300, r.width * dpr); c.height = Math.max(220, r.height * dpr);
+      const ctx = c.getContext("2d"); ctx.scale(dpr, dpr);
+      const W = r.width, H = r.height;
+      const cs = getComputedStyle(document.documentElement);
+      const fg = cs.getPropertyValue("--fg").trim(), muted = cs.getPropertyValue("--muted").trim();
+      const border = cs.getPropertyValue("--border").trim(), pri = cs.getPropertyValue("--primary").trim();
+      const suc = cs.getPropertyValue("--success").trim(), warn = cs.getPropertyValue("--warning").trim(), err = cs.getPropertyValue("--error").trim();
+      ctx.clearRect(0, 0, W, H);
+      const pad = { l: 42, r: 18, t: 22, b: 32 }, pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+      const xOf = (mb) => pad.l + ((Math.log10(Math.max(4, mb)) - Math.log10(4)) / (Math.log10(700) - Math.log10(4))) * pw;
+      const yOf = (s) => pad.t + ((100 - Math.max(50, Math.min(100, s))) / 50) * ph;
+
+      ctx.strokeStyle = border; ctx.fillStyle = muted; ctx.font = "11px sans-serif";
+      [55, 70, 85, 100].forEach((yv) => { const y = yOf(yv); ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke(); ctx.textAlign = "right"; ctx.fillText(yv, pad.l - 6, y + 4); });
+      [5, 10, 20, 50, 100, 400].forEach((mb) => { const x = xOf(mb); ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, H - pad.b); ctx.stroke(); ctx.textAlign = "center"; ctx.fillText(mb + "MB", x, H - pad.b + 14); });
+
+      const x1 = xOf(350), x2 = xOf(650);
+      ctx.save(); ctx.globalAlpha = 0.1; ctx.fillStyle = err; ctx.fillRect(x1, pad.t, x2 - x1, ph); ctx.restore();
+      ctx.strokeStyle = err; ctx.setLineDash([4, 4]); ctx.strokeRect(x1, pad.t, x2 - x1, ph); ctx.setLineDash([]);
+      ctx.fillStyle = err; ctx.textAlign = "center"; ctx.font = "bold 10px sans-serif";
+      ctx.fillText("0.5B–0.6B 端侧区间", (x1 + x2) / 2, H - pad.b - 24);
+      ctx.font = "10px sans-serif"; ctx.fillText("350–614 MB / 抢GPU", (x1 + x2) / 2, H - pad.b - 10);
+
+      const rb = MODELS.find((m) => m.id === "rules"), ry = yOf(ov(rb));
+      ctx.strokeStyle = warn; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.moveTo(pad.l, ry); ctx.lineTo(W - pad.r, ry); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = warn; ctx.textAlign = "left"; ctx.fillText("启发式规则基线 = " + ov(rb).toFixed(1), pad.l + 6, ry - 5);
+
+      MODELS.filter((m) => m.params > 0).forEach((m) => {
+        const s = ov(m), x = xOf(m.size), y = yOf(s), isSel = m.id === selId;
+        const col = m.id === "teacher" ? warn : (m.track === "fusion" ? suc : pri);
+        ctx.beginPath(); ctx.arc(x, y, isSel ? 7 : 5, 0, Math.PI * 2); ctx.fillStyle = col; ctx.fill();
+        if (isSel) { ctx.lineWidth = 2; ctx.strokeStyle = fg; ctx.stroke(); }
+        ctx.fillStyle = isSel ? fg : muted; ctx.font = (isSel ? "bold " : "") + "10.5px sans-serif";
+        ctx.textAlign = m.size < 30 ? "left" : "right";
+        ctx.fillText(`${m.short} (${s.toFixed(1)})`, x + (m.size < 30 ? 8 : -8), y + (m.track === "fusion" ? -5 : 10));
+      });
+    }
+
+    document.querySelectorAll(".track-btn").forEach((b) => b.addEventListener("click", () => { track = b.dataset.track; render(); }));
+    document.querySelectorAll(".preset-btn").forEach((b) => b.addEventListener("click", () => { preset = b.dataset.preset; render(); }));
+    document.querySelectorAll("th[data-sort]").forEach((th) => th.addEventListener("click", () => {
+      const k = th.dataset.sort;
+      if (sortKey === k) sortAsc = !sortAsc; else { sortKey = k; sortAsc = (k === "hard_fpr95" || k === "size" || k === "lat20"); }
+      render();
+    }));
+    window.addEventListener("resize", drawPareto);
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,231 @@
+"""Zero-PyTorch, zero-Transformers ONNX INT8 inference engine for OjinjinNet.
+
+Runtime dependencies: ONLY `onnxruntime` and `numpy`.
+Implements standard BERT Chinese WordPiece tokenization (`vocab.txt`) plus
+Head+Tail truncation so opening hooks and closing AI sign-offs both survive.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import sys
+import unicodedata
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+import onnxruntime as ort
+
+
+def _is_whitespace(ch: str) -> bool:
+    return ch in (" ", "\t", "\n", "\r") or unicodedata.category(ch) == "Zs"
+
+
+def _is_control(ch: str) -> bool:
+    if ch in ("\t", "\n", "\r"):
+        return False
+    return unicodedata.category(ch) in ("Cc", "Cf")
+
+
+def _is_punctuation(ch: str) -> bool:
+    cp = ord(ch)
+    if (33 <= cp <= 47) or (58 <= cp <= 64) or (91 <= cp <= 96) or (123 <= cp <= 126):
+        return True
+    return unicodedata.category(ch).startswith("P")
+
+
+def _is_chinese_char(cp: int) -> bool:
+    return (
+        (0x4E00 <= cp <= 0x9FFF)
+        or (0x3400 <= cp <= 0x4DBF)
+        or (0x20000 <= cp <= 0x2A6DF)
+        or (0x2A700 <= cp <= 0x2B73F)
+        or (0x2B740 <= cp <= 0x2B81F)
+        or (0x2B820 <= cp <= 0x2CEAF)
+        or (0xF900 <= cp <= 0xFAFF)
+        or (0x2F800 <= cp <= 0x2FA1F)
+    )
+
+
+def _strip_accents(text: str) -> str:
+    return "".join(ch for ch in unicodedata.normalize("NFD", text) if unicodedata.category(ch) != "Mn")
+
+
+class WordPieceTokenizer:
+    """Minimal BERT Chinese WordPiece tokenizer aligned with HuggingFace `BertTokenizer(do_lower_case=True)`."""
+
+    def __init__(self, vocab_path: str | Path) -> None:
+        # Match HuggingFace `BertTokenizer` exactly: split ONLY on '\n'/'\r\n', NOT Unicode linebreaks!
+        self.vocab: dict[str, int] = {}
+        with Path(vocab_path).open("r", encoding="utf-8") as f:
+            for idx, line in enumerate(f):
+                tok = line.rstrip("\r\n")
+                self.vocab[tok] = idx
+        self.pad_id = self.vocab.get("[PAD]", 0)
+        self.unk_id = self.vocab.get("[UNK]", 100)
+        self.cls_id = self.vocab.get("[CLS]", 101)
+        self.sep_id = self.vocab.get("[SEP]", 102)
+
+    def _basic_tokenize(self, text: str) -> list[str]:
+        # 1. Clean control chars & pad CJK chars with spaces
+        buf: list[str] = []
+        for ch in text:
+            cp = ord(ch)
+            if cp == 0 or cp == 0xFFFD or _is_control(ch):
+                continue
+            if _is_whitespace(ch):
+                buf.append(" ")
+            elif _is_chinese_char(cp):
+                buf.append(" ")
+                buf.append(ch)
+                buf.append(" ")
+            else:
+                buf.append(ch)
+        cleaned = "".join(buf)
+
+        # 2. Split on whitespace, lowercase, strip accents, split punctuation
+        tokens: list[str] = []
+        for raw in cleaned.strip().split():
+            word = _strip_accents(raw.lower())
+            start = 0
+            for i, ch in enumerate(word):
+                if _is_punctuation(ch):
+                    if i > start:
+                        tokens.append(word[start:i])
+                    tokens.append(ch)
+                    start = i + 1
+            if start < len(word):
+                tokens.append(word[start:])
+        return tokens
+
+    def _wordpiece(self, token: str) -> list[int]:
+        if len(token) > 100:
+            return [self.unk_id]
+        sub_ids: list[int] = []
+        start = 0
+        n = len(token)
+        while start < n:
+            end = n
+            found: int | None = None
+            while start < end:
+                sub = token[start:end] if start == 0 else "##" + token[start:end]
+                tid = self.vocab.get(sub)
+                if tid is not None:
+                    found = tid
+                    break
+                end -= 1
+            if found is None:
+                return [self.unk_id]
+            sub_ids.append(found)
+            start = end
+        return sub_ids
+
+    def encode(self, text: str, max_len: int = 192, head_len: int = 140) -> list[int]:
+        ids: list[int] = []
+        for tok in self._basic_tokenize(text):
+            ids.extend(self._wordpiece(tok))
+        body_budget = max_len - 2
+        if len(ids) > body_budget:
+            tail_len = body_budget - head_len
+            ids = ids[:head_len] + ids[-tail_len:]
+        return [self.cls_id] + ids + [self.sep_id]
+
+
+class OjinjinClassifier:
+    """Fast CPU ONNX INT8 classifier for detecting AI-generated Chinese comments."""
+
+    def __init__(
+        self,
+        model_dir: str | Path,
+        num_threads: int = 4,
+    ) -> None:
+        self.model_dir = Path(model_dir)
+        model_path = self.model_dir / "model_int8.onnx"
+        vocab_path = self.model_dir / "vocab.txt"
+        if not model_path.is_file():
+            raise FileNotFoundError(f"ONNX model not found: {model_path}")
+        if not vocab_path.is_file():
+            raise FileNotFoundError(f"Vocabulary file not found: {vocab_path}")
+
+        self.tokenizer = WordPieceTokenizer(vocab_path)
+
+        # Read sequence budget & optional fusion weights from manifest / fusion_weights.json
+        self.max_len = 192
+        self.head_len = 140
+        self.fusion: dict[str, Any] | None = None
+        fw_path = self.model_dir / "fusion_weights.json"
+        if fw_path.is_file():
+            self.fusion = json.loads(fw_path.read_text(encoding="utf-8"))
+            self.max_len = int(self.fusion.get("max_len", 128))
+            self.head_len = int(self.fusion.get("head_len", 94 if self.max_len == 128 else 140))
+
+        opts = ort.SessionOptions()
+        opts.intra_op_num_threads = num_threads
+        opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+        self.session = ort.InferenceSession(
+            str(model_path), sess_options=opts, providers=["CPUExecutionProvider"]
+        )
+
+    def predict_logits(self, texts: list[str], batch_size: int = 32) -> np.ndarray:
+        """Return temperature-calibrated log-odds for each comment text."""
+        if not texts:
+            return np.zeros((0,), dtype=np.float32)
+        outs: list[np.ndarray] = []
+        pad_id = self.tokenizer.pad_id
+        for i in range(0, len(texts), batch_size):
+            chunk = texts[i : i + batch_size]
+            seqs = [self.tokenizer.encode(t, max_len=self.max_len, head_len=self.head_len) for t in chunk]
+            ml = max(len(s) for s in seqs)
+            ids = np.full((len(chunk), ml), pad_id, dtype=np.int64)
+            mask = np.zeros((len(chunk), ml), dtype=np.int64)
+            for j, seq in enumerate(seqs):
+                ids[j, : len(seq)] = seq
+                mask[j, : len(seq)] = 1
+            logits = self.session.run(None, {"input_ids": ids, "attention_mask": mask})[0].reshape(-1)
+            outs.append(logits.astype(np.float32))
+        return np.concatenate(outs, axis=0)
+
+    def predict_proba(self, texts: list[str], batch_size: int = 32) -> list[float]:
+        """Return calibrated AI-generated probability in [0, 1] using comment text only."""
+        logits = self.predict_logits(texts, batch_size=batch_size)
+        probs = 1.0 / (1.0 + np.exp(-np.clip(logits, -30.0, 30.0)))
+        return [float(p) for p in probs]
+
+    def predict_with_fusion(self, text: str, metadata_features: dict[str, float]) -> float:
+        """Optional end-to-end probability combining pure-text logit with lightweight metadata features."""
+        if not self.fusion:
+            return self.predict_proba([text])[0]
+        logit = float(self.predict_logits([text])[0])
+        names: list[str] = self.fusion["feature_names"]
+        weights: list[float] = self.fusion["weights"]
+        bias = float(self.fusion["bias"])
+        vals = dict(metadata_features)
+        vals["neural_logit"] = logit
+        z = bias + sum(w * float(vals.get(k, 0.0)) for k, w in zip(names, weights))
+        return float(1.0 / (1.0 + math.exp(-max(-30.0, min(30.0, z)))))
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Run OjinjinNet ONNX INT8 inference on Chinese comments.")
+    parser.add_argument("--model-dir", type=Path, required=True, help="Directory with model_int8.onnx and vocab.txt")
+    parser.add_argument("--threads", type=int, default=4, help="CPU threads for ONNX Runtime")
+    parser.add_argument("texts", nargs="*", help="Comment strings to score (or pipe lines via stdin)")
+    args = parser.parse_args()
+
+    texts = list(args.texts)
+    if not texts and not sys.stdin.isatty():
+        texts = [line.strip() for line in sys.stdin if line.strip()]
+    if not texts:
+        parser.error("Provide at least one comment string as argument or via stdin.")
+
+    clf = OjinjinClassifier(args.model_dir, num_threads=args.threads)
+    probs = clf.predict_proba(texts)
+    for text, p in zip(texts, probs):
+        tag = "AI" if p >= 0.5 else "Human"
+        print(f"[{tag:5s}] p={p:.4f} | {text}")
+
+
+if __name__ == "__main__":
+    main()

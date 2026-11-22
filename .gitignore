@@ -1,0 +1,42 @@
+# Python / uv
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+build/
+*.egg-info/
+
+# Local secrets & credentials (NEVER commit!)
+.secrets/
+*.cookie*
+*cookies*.json
+
+# Datasets & raw scraped comments (Plan A: excluded for user privacy)
+data/
+captures/
+*.jsonl
+
+# Model weights, training artifacts & release archives (publish via GitHub Releases)
+checkpoints/
+checkpoints_v2/
+exports/
+exports_v2/
+release_assets/
+models/
+*.onnx
+*.safetensors
+*.pt
+*.pth
+*.bin
+*.zip
+
+# Temp / OS / IDE
+.tmp/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
