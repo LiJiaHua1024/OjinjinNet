@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OjinjinNet v1.1.0 · 端侧中文 AI 评论检测跑分总榜与帕累托看板</title>
+  <title>OjinjinNet v1.1.0 · 端侧中文 AI 评论检测评测看板</title>
   <style>
     :root {
       --background: #0f172a;
@@ -53,13 +53,16 @@
     .pill-v11 { display: inline-block; padding: 1px 6px; border-radius: 5px; font-size: 10px; font-weight: 700; background: var(--primary); color: var(--primary-foreground); }
     .pill-v10 { display: inline-block; padding: 1px 6px; border-radius: 5px; font-size: 10px; border: 1px solid var(--border); color: var(--muted-foreground); }
     .tag { display: inline-block; padding: 1px 6px; border-radius: 5px; font-size: 10px; border: 1px solid var(--border); color: var(--muted-foreground); }
-    h1 { margin: 6px 0 4px; font-size: 22px; letter-spacing: -0.01em; }
+    h1 { margin: 6px 0 4px; font-size: 21px; letter-spacing: -0.01em; }
     h2 { margin: 0; font-size: 15px; font-weight: 700; }
     .muted { color: var(--muted-foreground); font-size: 12px; }
     .kpis { display: grid; grid-template-columns: repeat(3, minmax(126px, 1fr)); gap: 10px; }
+    .kpis4 { display: grid; grid-template-columns: repeat(4, minmax(122px, 1fr)); gap: 10px; }
+    @media (max-width: 780px) { .kpis4 { grid-template-columns: repeat(2, 1fr); } }
     .kpi { background: var(--background); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; text-align: center; }
     .kpi-v { font-size: 17px; font-weight: 800; margin: 2px 0; }
     .row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
+    .ctrl-stack { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
     .btn-group { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
     button {
       padding: 6px 11px;
@@ -70,7 +73,6 @@
       background: var(--background);
       color: var(--foreground);
       cursor: pointer;
-      transition: opacity 0.15s ease;
     }
     button:hover { opacity: 0.88; }
     .explainer {
@@ -95,11 +97,11 @@
       padding: 8px;
       overflow: hidden;
     }
-    #pareto-svg { width: 100%; height: auto; display: block; user-select: none; }
+    #pareto-svg, .arena-svg { width: 100%; height: auto; display: block; user-select: none; }
     .svg-pt { cursor: pointer; transition: transform 0.14s ease, opacity 0.14s ease; transform-box: fill-box; transform-origin: center; }
     .svg-pt:hover { transform: scale(1.25); }
     .svg-lbl { cursor: pointer; }
-    #pareto-tip {
+    #pareto-tip, .float-tip {
       position: absolute;
       opacity: 0;
       pointer-events: none;
@@ -110,7 +112,7 @@
       padding: 11px;
       box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
       font-size: 12px;
-      width: 262px;
+      width: 276px;
       transition: opacity 0.12s ease;
     }
     .tip-grid {
@@ -157,6 +159,19 @@
     .guide-box { background: var(--background); border: 1px solid var(--border); border-radius: 10px; padding: 13px; font-size: 12px; display: flex; flex-direction: column; gap: 6px; }
     .guide-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
     .guide-pill { padding: 2px 7px; border-radius: 6px; background: var(--card); border: 1px solid var(--border); font-weight: 700; font-size: 11px; }
+    .nav-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 8px 12px; }
+    .nav-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+    .nav-tab { padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 700; border: 1px solid var(--border); background: var(--background); color: var(--foreground); cursor: pointer; }
+    .view-pane { display: flex; flex-direction: column; gap: 18px; }
+    .cards3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    @media (max-width: 860px) { .cards3 { grid-template-columns: 1fr; } }
+    code { background: var(--background); border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 11px; color: var(--foreground); }
+    .camp-badge { display: inline-block; padding: 1px 6px; border-radius: 5px; font-size: 10px; font-weight: 700; border: 1px solid var(--border); }
+    .camp-ours { background: var(--primary); color: var(--primary-foreground); border-color: var(--primary); }
+    .camp-rule { color: var(--warning); }
+    .camp-hf { color: var(--muted-foreground); }
+    .camp-llm { color: var(--error); }
+    .tbl-toolbar { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
     .c-suc { color: var(--success); }
     .c-pri { color: var(--primary); }
     .c-err { color: var(--error); }
@@ -168,244 +183,444 @@
 <body>
   <div class="wrap">
 
-    <header class="card header">
-      <div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <span class="badge">OjinjinNet v1.1.0 · 主动学习进化版</span>
-          <span class="muted">840 条 4 模型高分歧硬样本 → 精标回流 → 0 新增参数全档破纪录</span>
-        </div>
-        <h1>端侧中文 AI 评论检测跑分总榜 &amp; 帕累托效率看板</h1>
-        <div class="muted">
-          支持一键切换 <strong class="c-fg">完整考卷 (1,310 题)</strong> / <strong class="c-fg">去饱和 Hard 魔鬼卷 (777 题)</strong> · 内置 <strong class="c-fg">骁龙 865（Android ARM64 CPU）</strong> 真机实测
-        </div>
+    <nav class="nav-bar" aria-label="视图切换">
+      <div class="nav-tabs">
+        <button data-tab="overview" class="nav-tab">模型演进与端侧实测</button>
+        <button data-tab="arena" class="nav-tab">公开方案横向评测（23 款 · 33 组）</button>
       </div>
-      <div class="kpis">
-        <div class="kpi">
-          <div class="muted">Pro v1.1 纯文本</div>
-          <div class="kpi-v c-suc">0.9826</div>
-          <div class="muted">PR-AUC (+0.41%)</div>
-        </div>
-        <div class="kpi">
-          <div class="muted">Lite v1.1 (7MB)</div>
-          <div class="kpi-v c-suc">80.0%</div>
-          <div class="muted">Hard 隐蔽 AI (+15.6%)</div>
-        </div>
-        <div class="kpi">
-          <div class="muted">骁龙 865 整页 20 条</div>
-          <div class="kpi-v c-pri">56 / 106 / 314ms</div>
-          <div class="muted">4 核纯 CPU 分桶</div>
-        </div>
-      </div>
-    </header>
+      <div class="muted">评测基准：<strong class="c-fg">OjinjinBench-v1</strong></div>
+    </nav>
 
-    <section class="card">
-      <div class="row">
-        <div class="btn-group">
-          <span class="muted fw-b">考卷难度：</span>
-          <button data-exam="full" class="exam-btn">完整考卷 (1,310 题)</button>
-          <button data-exam="hard" class="exam-btn">去饱和 Hard 魔鬼卷 (777 题)</button>
-        </div>
-        <div class="btn-group">
-          <span class="muted fw-b">赛道：</span>
-          <button data-track="all" class="track-btn">全部</button>
-          <button data-track="fusion" class="track-btn">端到端 (+1KB 融合)</button>
-          <button data-track="text" class="track-btn">纯文本裸考</button>
-        </div>
-        <div class="btn-group">
-          <span class="muted fw-b">版本：</span>
-          <button data-ver="compare" class="ver-btn">v1.1 vs v1.0 对比</button>
-          <button data-ver="v11" class="ver-btn">只看最新 v1.1</button>
-        </div>
-      </div>
+    <!-- ======================== TAB 1: OVERVIEW ======================== -->
+    <div id="view-overview" class="view-pane">
 
-      <div class="explainer">
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <span id="exp-badge" class="badge">随手查指标</span>
-          <span id="exp-text" class="c-fg">把鼠标移到下方任意表头（如 Best F0.5、PR-AUC、R@P95%），这里立刻显示大白话解释！</span>
-        </div>
-        <span id="exam-desc" class="muted"></span>
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="row">
+      <header class="card header">
         <div>
-          <h2>体积 vs 性能 帕累托效率前沿图（越往左上角越神）</h2>
-          <div class="muted" style="margin-top:3px;">
-            横轴为 ONNX 体积（对数刻度 MB）· 实心圆 <strong class="c-suc">●</strong> 为端到端融合前沿，实心菱形 <strong class="c-pri">◆</strong> 为纯文本裸考前沿 · 竖向箭头标示 <strong>v1.0 → v1.1 零增量原地拔高</strong>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="badge">OjinjinNet v1.1.0</span>
+            <span class="muted">第 1 轮委员会主动学习（840 条高分歧样本复核回流），模型体积与延迟不变</span>
+          </div>
+          <h1>端侧中文 AI 评论检测评测看板</h1>
+          <div class="muted">
+            覆盖 <strong class="c-fg">完整集 (1,310 条)</strong> 与 <strong class="c-fg">Hard-Only 子集 (777 条)</strong>，附 <strong class="c-fg">骁龙 865（Android ARM64 CPU）</strong> 实测耗时
           </div>
         </div>
-        <div class="btn-group">
-          <span class="muted fw-b">纵轴指标：</span>
-          <button data-y="f05" class="y-btn">Best F0.5 (推荐)</button>
-          <button data-y="pr_auc" class="y-btn">PR-AUC</button>
-          <button data-y="r95" class="y-btn">Recall@P95%</button>
-          <button data-y="overall" class="y-btn">Overall 总分</button>
+        <div class="kpis">
+          <div class="kpi">
+            <div class="muted">Pro v1.1 纯文本</div>
+            <div class="kpi-v c-suc">0.9826</div>
+            <div class="muted">PR-AUC (+0.41%)</div>
+          </div>
+          <div class="kpi">
+            <div class="muted">Lite v1.1 (7MB)</div>
+            <div class="kpi-v c-suc">80.0%</div>
+            <div class="muted">Hard R@P95% (+15.6%)</div>
+          </div>
+          <div class="kpi">
+            <div class="muted">骁龙 865 整页 20 条</div>
+            <div class="kpi-v c-pri">56 / 106 / 314ms</div>
+            <div class="muted">4 核纯 CPU 分桶</div>
+          </div>
         </div>
-      </div>
+      </header>
 
-      <div class="pareto-box">
-        <svg id="pareto-svg" viewBox="0 0 1000 445"></svg>
-        <div id="pareto-tip"></div>
-      </div>
-
-      <div class="legend">
-        <div class="legend-items">
-          <span class="legend-item">
-            <svg width="12" height="12" viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="var(--success)"/></svg>
-            v1.1 端到端 (+1KB融合)
-          </span>
-          <span class="legend-item">
-            <svg width="12" height="12" viewBox="0 0 12 12"><polygon points="6,1 11,6 6,11 1,6" fill="var(--primary)"/></svg>
-            v1.1 纯文本裸考
-          </span>
-          <span class="legend-item">
-            <svg width="12" height="12" viewBox="0 0 12 12"><circle cx="6" cy="6" r="4" fill="none" stroke="var(--muted-foreground)" stroke-width="2"/></svg>
-            v1.0 旧版（虚线箭头向上进化）
-          </span>
-          <span class="legend-item">
-            <svg width="12" height="12" viewBox="0 0 12 12"><rect x="2" y="2" width="8" height="8" rx="1.5" fill="var(--warning)"/></svg>
-            390MB 离线12层教师
-          </span>
+      <section class="card">
+        <div class="row">
+          <div class="btn-group">
+            <span class="muted fw-b">评估集：</span>
+            <button data-exam="full" class="exam-btn">完整集 (1,310 条)</button>
+            <button data-exam="hard" class="exam-btn">Hard-Only 子集 (777 条)</button>
+          </div>
+          <div class="btn-group">
+            <span class="muted fw-b">输入赛道：</span>
+            <button data-track="all" class="track-btn">全部</button>
+            <button data-track="fusion" class="track-btn">端到端 (+1KB 融合)</button>
+            <button data-track="text" class="track-btn">仅纯文本</button>
+          </div>
+          <div class="btn-group">
+            <span class="muted fw-b">版本范围：</span>
+            <button data-ver="compare" class="ver-btn">v1.1 与 v1.0 对照</button>
+            <button data-ver="v11" class="ver-btn">仅看 v1.1</button>
+          </div>
         </div>
-        <span>悬浮看体检 · 点击圆点或药丸标签锁定下方明细</span>
-      </div>
-    </section>
 
-    <div class="grid12">
-      <section class="card col8" style="padding:0;overflow:hidden;display:flex;flex-direction:column;">
-        <div class="table-wrap" style="flex:1;">
+        <div class="explainer">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span id="exp-badge" class="badge">指标说明</span>
+            <span id="exp-text" class="c-fg">将鼠标悬停在下方任意表头（Best F0.5 / PR-AUC / R@P95% 等）可查看定义。</span>
+          </div>
+          <span id="exam-desc" class="muted"></span>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="row">
+          <div>
+            <h2>体积 vs 性能帕累托前沿（越靠左上越优）</h2>
+            <div class="muted" style="margin-top:3px;">
+              横轴为 ONNX 体积（对数刻度 MB）；实心圆 <strong class="c-suc">●</strong> 表示端到端融合，实心菱形 <strong class="c-pri">◆</strong> 表示仅纯文本，竖向虚线标示 v1.0 至 v1.1 同体积变化
+            </div>
+          </div>
+          <div class="btn-group">
+            <span class="muted fw-b">纵轴指标：</span>
+            <button data-y="f05" class="y-btn">Best F0.5</button>
+            <button data-y="pr_auc" class="y-btn">PR-AUC</button>
+            <button data-y="r95" class="y-btn">Recall@P95%</button>
+            <button data-y="overall" class="y-btn">Overall 综合分</button>
+          </div>
+        </div>
+
+        <div class="pareto-box">
+          <svg id="pareto-svg" viewBox="0 0 1000 445"></svg>
+          <div id="pareto-tip"></div>
+        </div>
+
+        <div class="legend">
+          <div class="legend-items">
+            <span class="legend-item">
+              <svg width="12" height="12" viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="var(--success)"/></svg>
+              v1.1 端到端 (+1KB 融合)
+            </span>
+            <span class="legend-item">
+              <svg width="12" height="12" viewBox="0 0 12 12"><polygon points="6,1 11,6 6,11 1,6" fill="var(--primary)"/></svg>
+              v1.1 纯文本
+            </span>
+            <span class="legend-item">
+              <svg width="12" height="12" viewBox="0 0 12 12"><circle cx="6" cy="6" r="4" fill="none" stroke="var(--muted-foreground)" stroke-width="2"/></svg>
+              v1.0 对照（虚线标示版本变化）
+            </span>
+            <span class="legend-item">
+              <svg width="12" height="12" viewBox="0 0 12 12"><rect x="2" y="2" width="8" height="8" rx="1.5" fill="var(--warning)"/></svg>
+              390MB 离线 12 层教师
+            </span>
+          </div>
+          <span>悬停查看详情 · 点击数据点或标签联动右侧明细面板</span>
+        </div>
+      </section>
+
+      <div class="grid12">
+        <section class="card col8" style="padding:0;overflow:hidden;display:flex;flex-direction:column;">
+          <div class="table-wrap" style="flex:1;">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>模型 / 版本</th>
+                  <th data-sort="f05" data-metric="f05" class="sort-th">Best F0.5 <span class="c-suc">↑</span></th>
+                  <th data-sort="pr_auc" data-metric="pr_auc" class="sort-th">PR-AUC <span class="c-suc">↑</span></th>
+                  <th data-sort="r95" data-metric="r95" class="sort-th">R@P95% <span class="c-suc">↑</span></th>
+                  <th data-sort="r99" data-metric="r99" class="sort-th">R@P99% <span class="c-suc">↑</span></th>
+                  <th data-sort="stealth95" data-metric="stealth95" class="sort-th">隐蔽AI <span class="c-suc">↑</span></th>
+                  <th data-sort="hard_fpr95" data-metric="hard_fpr95" class="sort-th">难负误杀 <span class="c-err">↓</span></th>
+                  <th data-sort="size" data-metric="size" class="sort-th">体积 <span class="c-err">↓</span></th>
+                </tr>
+              </thead>
+              <tbody id="leaderboard-body"></tbody>
+            </table>
+          </div>
+          <div class="tfoot-bar">
+            <span>悬停表头查看定义 · 点击表头排序</span>
+            <span><strong class="c-suc">↑ 越高越好</strong> · <strong class="c-err">↓ 越低越好</strong></span>
+          </div>
+        </section>
+
+        <section class="card col4">
+          <div class="detail-head">
+            <div>
+              <div class="muted">选中模型明细与端侧实测</div>
+              <div id="detail-title" style="font-size:14px;font-weight:700;margin-top:2px;"></div>
+            </div>
+            <span id="detail-badge" class="badge"></span>
+          </div>
+
+          <div id="detail-bars" class="bar-list"></div>
+
+          <div class="subcard" style="margin-bottom:10px;">
+            <div id="detail-exam-title" style="font-size:12px;font-weight:700;"></div>
+            <div id="detail-counts" class="kv-grid"></div>
+          </div>
+
+          <div class="subcard">
+            <div style="font-size:12px;font-weight:700;">骁龙 865（Android ARM64 · 4 核纯 CPU）</div>
+            <div id="detail-mobile" class="kv-grid"></div>
+          </div>
+        </section>
+      </div>
+
+      <section class="card">
+        <div style="border-bottom:1px solid var(--border);padding-bottom:10px;">
+          <h2>指标定义速查</h2>
+          <div class="muted" style="margin-top:3px;">评论过滤属于静默隐藏场景，错判真人长评的代价高于漏放 AI 评论。除「难负真人误杀率」越低越好外，其余指标均为越高越好。</div>
+        </div>
+
+        <div class="guides">
+          <div class="guide-box">
+            <div class="guide-head"><strong style="font-size:13px;">PR-AUC</strong><span class="guide-pill c-suc">越高越好 (0–1)</span></div>
+            <div class="fw-b">全局排序能力（不依赖阈值）</div>
+            <div class="muted">衡量模型将 AI 评论整体排在真人评论之前的能力，对正负样本不平衡敏感且不受单点阈值波动影响。</div>
+          </div>
+
+          <div class="guide-box">
+            <div class="guide-head"><strong style="font-size:13px;">Best F0.5</strong><span class="guide-pill c-suc">越高越好 (0–1)</span></div>
+            <div class="fw-b">偏向低误杀的综合单点分</div>
+            <div class="muted">相比 F1 对精确率与召回率等权，F0.5 将精确率（少误杀）权重提高至召回率的 2 倍，更贴合静默过滤需求。</div>
+          </div>
+
+          <div class="guide-box">
+            <div class="guide-head"><strong style="font-size:13px;">Recall @ P95%</strong><span class="guide-pill c-suc">越高越好 (0–100%)</span></div>
+            <div class="fw-b">标准过滤档（精确率 ≥ 95%）召回率</div>
+            <div class="muted">限制每过滤 20 条评论最多出现 1 条误判/争议时，模型能够覆盖的 AI 评论比例，统计稳定性高于 P99%。</div>
+          </div>
+
+          <div class="guide-box">
+            <div class="guide-head"><strong style="font-size:13px;">Recall @ P99%</strong><span class="guide-pill c-suc">越高越好 (0–100%)</span></div>
+            <div class="fw-b">保守档（精确率 ≥ 99%）召回率</div>
+            <div class="muted">限制每过滤 100 条最多误判 1 条真人时的召回率。由于单条高分真人样本即可显著拉低阈值，宜配合 PR-AUC 和 F0.5 解读。</div>
+          </div>
+
+          <div class="guide-box">
+            <div class="guide-head"><strong style="font-size:13px;">隐蔽 AI 召回</strong><span class="guide-pill c-suc">越高越好 (0–100%)</span></div>
+            <div class="fw-b">无明显特征词 AI 评论的捕获率</div>
+            <div class="muted">在 160 条传统规则得分为零的隐蔽 AI 样本上的召回比例，用于验证模型是否真正识别生成语体而非依赖关键词。</div>
+          </div>
+
+          <div class="guide-box">
+            <div class="guide-head"><strong style="font-size:13px;">难负真人误杀率</strong><span class="guide-pill c-err">越低越好 (理想 0%)</span></div>
+            <div class="fw-b">高难真人长评上的误判比例</div>
+            <div class="muted">在 617 条科普、影评、观后感与反串真人评论上的误判率，用于评估对结构工整真人内容的保护能力。</div>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /view-overview -->
+
+    <!-- ======================== TAB 2: ARENA ======================== -->
+    <div id="view-arena" class="view-pane" style="display:none;">
+
+      <header class="card header">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="badge">横向评测 · 23 款公开方案 / 33 组实测</span>
+            <span class="muted">8 款 HF 开源检测模型 + 冻结 BGE 向量 + Qwen 0.5B/0.6B + 12 款社区规则插件离线直跑</span>
+          </div>
+          <h1>OjinjinNet v1.1.0 与公开基线同集评测</h1>
+          <div class="muted">
+            全部方案均在冻结的 <strong class="c-fg">OjinjinBench-v1 完整集 (1,310 条)</strong> 与 <strong class="c-fg">Hard-Only 子集 (777 条)</strong> 上按原版实现评测
+          </div>
+        </div>
+        <div class="kpis4">
+          <div class="kpi">
+            <div class="muted">相对规则最高 R@P95%</div>
+            <div class="kpi-v c-suc">+44.5%</div>
+            <div class="muted">97.1% vs 52.6%</div>
+          </div>
+          <div class="kpi">
+            <div class="muted">Hard-Only R@P95%</div>
+            <div class="kpi-v c-suc">89.4% vs 2.5%</div>
+            <div class="muted">规则体系最高 2.5%</div>
+          </div>
+          <div class="kpi">
+            <div class="muted">8 款开源中文检测器</div>
+            <div class="kpi-v c-err">0.0%</div>
+            <div class="muted">R@P95% 均为 0%</div>
+          </div>
+          <div class="kpi">
+            <div class="muted">对比 Qwen3-0.6B</div>
+            <div class="kpi-v c-pri">0.9685 vs 0.3552</div>
+            <div class="muted">纯文本 F0.5 · 轻 8–60×</div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Section 1: Neural Pareto (local controls directly above chart!) -->
+      <section class="card">
+        <div class="row">
+          <div>
+            <h2>1. 开源检测模型、冻结向量与端侧小大模型对比（纯文本 · 体积 vs 性能）</h2>
+            <div class="muted" style="margin-top:3px;">
+              所有模型仅输入评论正文；横轴为模型体积（对数刻度 MB），包含 8 款 HF 中文/多语言检测模型、冻结 <code>bge-small-zh-v1.5</code> 向量与零样本 Qwen 0.5B / 0.6B
+            </div>
+          </div>
+          <div class="ctrl-stack">
+            <div class="btn-group">
+              <span class="muted fw-b">评估集：</span>
+              <button data-aexam="full" class="a-exam-btn">完整集 (1,310)</button>
+              <button data-aexam="hard" class="a-exam-btn">Hard-Only (777)</button>
+            </div>
+            <div class="btn-group">
+              <span class="muted fw-b">纵轴：</span>
+              <button data-ay="f05" class="a-y-btn">Best F0.5</button>
+              <button data-ay="pr_auc" class="a-y-btn">PR-AUC</button>
+              <button data-ay="r95" class="a-y-btn">Recall@P95%</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pareto-box">
+          <svg id="a-pareto-svg" viewBox="0 0 1000 430" class="arena-svg"></svg>
+          <div id="a-pareto-tip" class="float-tip"></div>
+        </div>
+
+        <div class="legend">
+          <div class="legend-items">
+            <span class="legend-item"><svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="var(--success)"/></svg> OjinjinNet v1.1 (+1KB 融合)</span>
+            <span class="legend-item"><svg width="12" height="12"><polygon points="6,1 11,6 6,11 1,6" fill="var(--primary)"/></svg> OjinjinNet v1.1 (纯文本)</span>
+            <span class="legend-item"><svg width="12" height="12"><rect x="2" y="2" width="8" height="8" rx="1.5" fill="var(--warning)"/></svg> HF 开源检测模型与冻结 BGE</span>
+            <span class="legend-item"><svg width="12" height="12"><polygon points="6,1 11,11 1,11" fill="var(--error)"/></svg> 端侧小大模型零样本 (Qwen 0.5B / 0.6B)</span>
+          </div>
+          <span id="a-pareto-note">悬停任意点或标签查看详细指标</span>
+        </div>
+      </section>
+
+      <!-- Section 2: 12 Community Rule Plugins Battlefield (local mode filter directly above chart!) -->
+      <section class="card">
+        <div class="row">
+          <div>
+            <h2>2. 12 款社区开源规则插件离线实测对比（隐蔽 AI 召回 vs 难负真人误杀）</h2>
+            <div class="muted" style="margin-top:3px;">
+              横轴为 617 条高难真人长评误杀率（越靠左越安全），纵轴为 160 条规则零分隐蔽 AI 召回率（越靠上越高）；虚线箭头表示同一插件切换至疑似/激进档后的变化（匿名编号插件 A–L）
+            </div>
+          </div>
+          <div class="btn-group">
+            <span class="muted fw-b">显示档位：</span>
+            <button data-bfmode="all" class="a-bf-btn">全部档位与轨迹</button>
+            <button data-bfmode="def" class="a-bf-btn">仅默认档</button>
+            <button data-bfmode="str" class="a-bf-btn">仅疑似/激进档</button>
+          </div>
+        </div>
+
+        <div class="pareto-box">
+          <svg id="a-battle-svg" viewBox="0 0 1000 430" class="arena-svg"></svg>
+          <div id="a-battle-tip" class="float-tip"></div>
+        </div>
+
+        <div class="legend">
+          <div class="legend-items">
+            <span class="legend-item"><svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="var(--success)"/></svg> OjinjinNet v1.1.0（P95 档）</span>
+            <span class="legend-item"><svg width="12" height="12"><rect x="2" y="2" width="8" height="8" rx="1.5" fill="var(--warning)"/></svg> 社区插件默认档</span>
+            <span class="legend-item"><svg width="12" height="12"><polygon points="6,1 11,11 1,11" fill="var(--error)"/></svg> 社区插件疑似 / 激进档</span>
+          </div>
+          <span>默认档对隐蔽 AI 召回率普遍低于 20%；切至疑似/激进档后高难真人误杀率升至 10.5% – 39.9%</span>
+        </div>
+      </section>
+
+      <!-- Section 3: Master 33-Row Table (local exam + camp filter + hover explainer directly above table!) -->
+      <section class="card" style="padding:0;overflow:hidden;">
+        <div class="tbl-toolbar">
+          <div class="row">
+            <div>
+              <h2>3. 全部 33 组实测明细表（点击表头排序）</h2>
+              <div id="a-exam-desc" class="muted" style="margin-top:2px;"></div>
+            </div>
+            <span id="a-row-count" class="muted"></span>
+          </div>
+
+          <div class="row">
+            <div class="btn-group">
+              <span class="muted fw-b">评估集：</span>
+              <button data-aexam="full" class="a-exam-btn">完整集 (1,310)</button>
+              <button data-aexam="hard" class="a-exam-btn">Hard-Only (777)</button>
+            </div>
+            <div class="btn-group">
+              <span class="muted fw-b">类别筛选：</span>
+              <button data-acamp="all" class="a-camp-btn">全部 33 组</button>
+              <button data-acamp="bili_js" class="a-camp-btn">社区规则插件 (12款)</button>
+              <button data-acamp="neural" class="a-camp-btn">开源模型与小大模型 (11款)</button>
+              <button data-acamp="text_only" class="a-camp-btn">仅纯文本</button>
+            </div>
+          </div>
+
+          <div class="explainer" style="margin-top:0;">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span id="a-exp-badge" class="badge">指标说明</span>
+              <span id="a-exp-text" class="c-fg">将鼠标悬停在下方表头（Best F0.5 / PR-AUC / R@P95% / 开箱实测）可查看定义。</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
           <table>
             <thead>
               <tr>
                 <th>#</th>
-                <th>模型 / 版本</th>
-                <th data-sort="f05" data-metric="f05" class="sort-th">Best F0.5 <span class="c-suc">↑</span></th>
-                <th data-sort="pr_auc" data-metric="pr_auc" class="sort-th">PR-AUC <span class="c-suc">↑</span></th>
-                <th data-sort="r95" data-metric="r95" class="sort-th">R@P95% <span class="c-suc">↑</span></th>
-                <th data-sort="r99" data-metric="r99" class="sort-th">R@P99% <span class="c-suc">↑</span></th>
-                <th data-sort="stealth95" data-metric="stealth95" class="sort-th">隐蔽AI <span class="c-suc">↑</span></th>
-                <th data-sort="hard_fpr95" data-metric="hard_fpr95" class="sort-th">难负误杀 <span class="c-err">↓</span></th>
-                <th data-sort="size" data-metric="size" class="sort-th">体积 <span class="c-err">↓</span></th>
+                <th>方案 / 模型（类别）</th>
+                <th data-asort="f05" data-ametric="f05" class="a-sort-th">Best F0.5 <span class="c-suc">↑</span></th>
+                <th data-asort="pr_auc" data-ametric="pr_auc" class="a-sort-th">PR-AUC <span class="c-suc">↑</span></th>
+                <th data-asort="r95" data-ametric="r95" class="a-sort-th">R@P95% <span class="c-suc">↑</span></th>
+                <th data-asort="r99" data-ametric="r99" class="a-sort-th">R@P99% <span class="c-suc">↑</span></th>
+                <th data-ametric="ootb" class="a-sort-th" style="text-align:left;">开箱默认档实测 / 说明</th>
+                <th data-asort="size" data-ametric="size" class="a-sort-th">体积 <span class="c-err">↓</span></th>
               </tr>
             </thead>
-            <tbody id="leaderboard-body"></tbody>
+            <tbody id="a-master-tbody"></tbody>
           </table>
         </div>
-        <div class="tfoot-bar">
-          <span>悬浮表头看大白话解释 · 点击表头可排序</span>
-          <span><strong class="c-suc">↑ 越高越好</strong> · <strong class="c-err">↓ 越低越好</strong></span>
-        </div>
       </section>
 
-      <section class="card col4">
-        <div class="detail-head">
-          <div>
-            <div class="muted">选中模型实战与真机透视</div>
-            <div id="detail-title" style="font-size:14px;font-weight:700;margin-top:2px;"></div>
+      <section class="cards3">
+        <div class="card">
+          <div class="fw-b c-suc" style="font-size:14px;margin-bottom:6px;">社区规则插件的权衡边界</div>
+          <div class="muted" style="line-height:1.65;">
+            硬编码规则主要依赖昵称词、固定口癖、<code>@</code> 提及、标点或账号等级。面对去掉关键词的隐蔽 AI，保守默认档召回率多在 <code>1.2%–19.4%</code>；放宽至冒号、引号、破折号或低等级账号后，高难真人长评误杀率上升至 <code>10.5%–39.9%</code>。
           </div>
-          <span id="detail-badge" class="badge"></span>
         </div>
-
-        <div id="detail-bars" class="bar-list"></div>
-
-        <div class="subcard" style="margin-bottom:10px;">
-          <div id="detail-exam-title" style="font-size:12px;font-weight:700;"></div>
-          <div id="detail-counts" class="kv-grid"></div>
+        <div class="card">
+          <div class="fw-b c-warn" style="font-size:14px;margin-bottom:6px;">通用检测模型与冻结向量表现分析</div>
+          <div class="muted" style="line-height:1.65;">
+            8 款开源模型评测前均在正式 ChatGPT 论文段落上校验通过（<code>0.964–1.000</code>），但迁移到社区短评后因域偏移发生明显反转，高难真人科普长评得分高于伪口语 AI 评论；冻结 <code>bge-small</code> 向量主要按话题聚类，难以区分同一话题下的作者文风差异。
+          </div>
         </div>
-
-        <div class="subcard">
-          <div style="font-size:12px;font-weight:700;">骁龙 865（Android ARM64 · 4 核纯 CPU）实测</div>
-          <div id="detail-mobile" class="kv-grid"></div>
+        <div class="card">
+          <div class="fw-b c-pri" style="font-size:14px;margin-bottom:6px;">评测条件与边界说明</div>
+          <div class="muted" style="line-height:1.65;">
+            12 款社区脚本均运行未修改原版代码，喂入正文、昵称、等级、回复关系、点赞、楼层数与视频标题，以 <code>插件 A–L</code> 匿名展示；评测集未采集个人简介（<code>sign</code>）与头像像素，且全部处于本地离线模式（未调用付费云端大模型接口）。仅比纯文本时（<code>0.9826 vs 0.4624</code>）差距依然显著。
+          </div>
         </div>
       </section>
-    </div>
 
-    <section class="card">
-      <div style="border-bottom:1px solid var(--border);padding-bottom:10px;">
-        <h2>常驻大白话速查卡：忘了哪个指标就瞄一眼这里</h2>
-        <div class="muted" style="margin-top:3px;">核心原则：评论净化是<strong>静默删除</strong>，错删认真真人的伤害远大于漏放一条 AI 评论——所以<strong>只有「难负真人误杀率」越低越好，其余全部越高越好</strong>。</div>
-      </div>
-
-      <div class="guides">
-        <div class="guide-box">
-          <div class="guide-head"><strong style="font-size:13px;">PR-AUC</strong><span class="guide-pill c-suc">↑ 越高越好 (满分 1.0)</span></div>
-          <div class="fw-b">一句话：不设分数线的「纯排序基本功」</div>
-          <div class="muted">把所有评论按 AI 嫌疑从高到低排成一队，看 AI 评论排得有多靠前、真人排得有多靠后。<strong>最全面、最防刷分</strong>，不受单点阈值波动影响。</div>
-        </div>
-
-        <div class="guide-box">
-          <div class="guide-head"><strong style="font-size:13px;">Best F0.5</strong><span class="guide-pill c-suc">↑ 越高越好 (满分 1.0)</span></div>
-          <div class="fw-b">一句话：「少误杀优先」的综合平衡分</div>
-          <div class="muted">普通 F1 觉得“抓得全”和“少误杀”同等重要；<strong>F0.5 把“少误杀（精确率）”的权重放大到“抓得全”的 2 倍</strong>，最适合静默屏蔽场景挑最优单点。</div>
-        </div>
-
-        <div class="guide-box">
-          <div class="guide-head"><strong style="font-size:13px;">Recall @ P95%</strong><span class="guide-pill c-suc">↑ 越高越好 (满分 100%)</span></div>
-          <div class="fw-b">一句话：「标准净化档」能清掉几成 AI</div>
-          <div class="muted">每屏蔽 20 条评论最多允许 1 条争议/误杀（精确率 ≥ 95%）时，能拦截多少比例的 AI 评论。最能反映日常高强度净化体感，且比 P99% 稳得多。</div>
-        </div>
-
-        <div class="guide-box">
-          <div class="guide-head"><strong style="font-size:13px;">Recall @ P99%</strong><span class="guide-pill c-suc">↑ 越高越好 (满分 100%)</span></div>
-          <div class="fw-b">一句话：「几乎零误杀」极严苛档能抓几成</div>
-          <div class="muted">每屏蔽 100 条最多只许错杀 1 条真人（精确率 ≥ 99%）。极其考验模型顶部的洁净度——<strong>但只看单点很敏感</strong>（1 条真人贴了 AI 原文就能让它跳 10%）。</div>
-        </div>
-
-        <div class="guide-box">
-          <div class="guide-head"><strong style="font-size:13px;">隐蔽 AI 召回</strong><span class="guide-pill c-suc">↑ 越高越好 (满分 100%)</span></div>
-          <div class="fw-b">一句话：专抓「去掉关键词的新式隐蔽 AI」</div>
-          <div class="muted">专考 <strong>160 条传统规则打 0 分</strong>、去掉明显关键词的新式 AI 评论。规则在这里是 <strong>0%</strong>，这项高说明模型真正吃透了 AI 说话节奏。</div>
-        </div>
-
-        <div class="guide-box">
-          <div class="guide-head"><strong style="font-size:13px;">难负真人误杀率</strong><span class="guide-pill c-err">↓ 唯一越低越好 (理想 0%)</span></div>
-          <div class="fw-b">一句话：会不会把写科普小作文的真人一刀切</div>
-          <div class="muted">专拿 <strong>617 条高阶账号长评、科普、影评、玩梗反串真人</strong>做抗误杀压力测试。全表唯一越低越好的质量指标。</div>
-        </div>
-      </div>
-    </section>
+    </div><!-- /view-arena -->
 
   </div>
 
+  <!-- ======================== SCRIPT: TAB 1 OVERVIEW ======================== -->
   <script>
     const METRIC_INFO = {
-      f05:        { tag: "Best F0.5 · ↑越高越好", text: "偏重「少误杀」的综合平衡分：把“不误杀真人”看得比“抓得全”重要 2 倍，最适合静默删评对比。" },
-      pr_auc:     { tag: "PR-AUC · ↑越高越好", text: "不设阈值时的全局排序基本功：看模型能不能把所有 AI 排在真人前面，满分 1.0，最全面最防作弊。" },
-      r95:        { tag: "Recall@P95% · ↑越高越好", text: "标准净化档拦截率：每删 20 条最多误杀 1 条真人（精确率≥95%）时能抓出几成 AI，稳定度极高。" },
-      r99:        { tag: "Recall@P99% · ↑越高越好", text: "极度保守档拦截率：每删 100 条最多误杀 1 条真人（精确率≥99%）时能抓出几成 AI，对极端个例较敏感。" },
-      stealth95:  { tag: "隐蔽 AI 召回 · ↑越高越好", text: "在 160 条去掉特征词、旧规则打 0 分的隐蔽 AI 评论上的捕获率（旧规则 0.0%），最检验真语义功底。" },
-      hard_fpr95: { tag: "难负误杀率 · ↓越低越好", text: "全表唯一越低越好的识别指标！测 617 条认真写科普/影评/反串的真人里错杀了几成。" },
-      size:       { tag: "模型体积 · ↓越小越轻", text: "端侧 ONNX INT8 磁盘体积（MB），对比手机端 0.5B–0.6B 大模型（350–614 MB）轻 7~50 倍。" },
-      overall:    { tag: "Overall 总分 · ↑越高越好", text: "综合总分 = 30% PR-AUC + 30% Best F0.5 + 25% 隐蔽 AI 召回 + 15% (1 − 难负误杀率)，兼顾稳定与抗误杀。" },
+      f05:        { tag: "Best F0.5 · 越高越好", text: "将精确率（少误杀）权重设为召回率 2 倍的综合单点分，适合静默过滤场景。" },
+      pr_auc:     { tag: "PR-AUC · 越高越好", text: "不固定阈值时的全局排序能力（满分 1.0），对类别不平衡较稳健。" },
+      r95:        { tag: "Recall@P95% · 越高越好", text: "精确率 ≥ 95%（每过滤 20 条最多 1 条误判/争议）时的 AI 召回率。" },
+      r99:        { tag: "Recall@P99% · 越高越好", text: "精确率 ≥ 99%（每过滤 100 条最多 1 条误判）时的保守档召回率，对个别边界样本较敏感。" },
+      stealth95:  { tag: "隐蔽 AI 召回 · 越高越好", text: "在 160 条规则得分为零的隐蔽 AI 评论上的召回比例。" },
+      hard_fpr95: { tag: "难负真人误杀率 · 越低越好", text: "在 617 条高难真人长评（科普/影评/反串）上的误判比例。" },
+      size:       { tag: "模型体积 · 越小越轻", text: "端侧 ONNX INT8 磁盘体积（MB）。" },
+      overall:    { tag: "Overall 综合分 · 越高越好", text: "公开加权公式：30% PR-AUC + 30% Best F0.5 + 25% 隐蔽 AI 召回 + 15% (1 − 难负误杀率)。" },
     };
 
     const MOBILE_SPECS = {
       pro:     { page: "314 ms", b1: "18.8 ms", dm: "~310 条/秒", loadMem: "+83.7 MB", loadMs: "214 ms" },
       std:     { page: "106 ms", b1: "7.1 ms",  dm: "718 条/秒",  loadMem: "+53.9 MB", loadMs: "121 ms" },
       lite:    { page: "56 ms",  b1: "4.7 ms",  dm: "1,322 条/秒", loadMem: "+41.9 MB", loadMs: "122 ms" },
-      teacher: { page: "离线GPU", b1: "不适合端侧", dm: "离线参考", loadMem: ">600 MB",  loadMs: "离线" },
+      teacher: { page: "离线 GPU", b1: "离线参考", dm: "离线参考", loadMem: ">600 MB",  loadMs: "离线" },
       rules:   { page: "<1 ms",  b1: "<0.1 ms", dm: ">10万条/秒", loadMem: "0 MB",     loadMs: "0 ms" },
     };
 
     const MODELS = [
-      { id: "pro_v11_fus", tier: "pro", ver: "v11", track: "fusion", pairV10: "pro_v10_fus", name: "Pro v1.1 (MacBERT-6L + 融合)", short: "Pro v1.1 融合", badge: "v1.1 融合新王", size: 49.49,
+      { id: "pro_v11_fus", tier: "pro", ver: "v11", track: "fusion", pairV10: "pro_v10_fus", name: "Pro v1.1 (MacBERT-6L + 融合)", short: "Pro v1.1 融合", badge: "端到端最高", size: 49.49,
         full: { pr_auc: 0.99357, r99: 0.8323, r95: 0.9710, f05: 0.9702, f1: 0.9663, stealth95: 0.9437, hard_fpr95: 0.0227, caught99: 258, fp99: 2, caught95: 301, fp95: 15 },
         hard: { pr_auc: 0.97894, r99: 0.7000, r95: 0.8938, f05: 0.9408, f1: 0.9350, stealth95: 0.8938, hard_fpr95: 0.0113, caught99: 112, fp99: 1, caught95: 143, fp95: 7 } },
-      { id: "std_v11_fus", tier: "std", ver: "v11", track: "fusion", pairV10: "std_v10_fus", name: "Standard v1.1 (BGE-small + 融合)", short: "Std v1.1 融合", badge: "v1.1 主力推荐", size: 16.86,
+      { id: "std_v11_fus", tier: "std", ver: "v11", track: "fusion", pairV10: "std_v10_fus", name: "Standard v1.1 (BGE-small + 融合)", short: "Std v1.1 融合", badge: "默认推荐", size: 16.86,
         full: { pr_auc: 0.99134, r99: 0.8258, r95: 0.9581, f05: 0.9684, f1: 0.9643, stealth95: 0.9187, hard_fpr95: 0.0227, caught99: 256, fp99: 2, caught95: 297, fp95: 15 },
         hard: { pr_auc: 0.97107, r99: 0.6687, r95: 0.8625, f05: 0.9375, f1: 0.9304, stealth95: 0.8625, hard_fpr95: 0.0113, caught99: 107, fp99: 1, caught95: 138, fp95: 7 } },
-      { id: "lite_v11_fus", tier: "lite", ver: "v11", track: "fusion", pairV10: "lite_v10_fus", name: "Lite v1.1 (MiniRBT 7MB + 融合)", short: "Lite v1.1 融合", badge: "7MB 极速进化", size: 7.05,
+      { id: "lite_v11_fus", tier: "lite", ver: "v11", track: "fusion", pairV10: "lite_v10_fus", name: "Lite v1.1 (MiniRBT 7MB + 融合)", short: "Lite v1.1 融合", badge: "7 MB 轻量档", size: 7.05,
         full: { pr_auc: 0.99022, r99: 0.7355, r95: 0.9484, f05: 0.9686, f1: 0.9537, stealth95: 0.9000, hard_fpr95: 0.0227, caught99: 228, fp99: 2, caught95: 294, fp95: 15 },
         hard: { pr_auc: 0.96621, r99: 0.3937, r95: 0.8500, f05: 0.9358, f1: 0.9141, stealth95: 0.8500, hard_fpr95: 0.0113, caught99: 63,  fp99: 0, caught95: 136, fp95: 7 } },
 
-      { id: "pro_v11_txt", tier: "pro", ver: "v11", track: "text", pairV10: "pro_v10_txt", name: "Pro v1.1 (SmoothQuant 纯文本)", short: "Pro v1.1 纯文本", badge: "纯文本绝对冠军", size: 49.49,
+      { id: "pro_v11_txt", tier: "pro", ver: "v11", track: "text", pairV10: "pro_v10_txt", name: "Pro v1.1 (SmoothQuant 纯文本)", short: "Pro v1.1 纯文本", badge: "纯文本最高", size: 49.49,
         full: { pr_auc: 0.98256, r99: 0.7355, r95: 0.9355, f05: 0.9685, f1: 0.9459, stealth95: 0.9187, hard_fpr95: 0.0211, caught99: 228, fp99: 2, caught95: 290, fp95: 15 },
         hard: { pr_auc: 0.96819, r99: 0.3375, r95: 0.8938, f05: 0.9563, f1: 0.9301, stealth95: 0.8938, hard_fpr95: 0.0113, caught99: 54,  fp99: 0, caught95: 143, fp95: 7 } },
-      { id: "std_v11_txt", tier: "std", ver: "v11", track: "text", pairV10: "std_v10_txt", name: "Standard v1.1 (BGE 纯文本)", short: "Std v1.1 纯文本", badge: "17MB 破0.95 F0.5", size: 16.86,
+      { id: "std_v11_txt", tier: "std", ver: "v11", track: "text", pairV10: "std_v10_txt", name: "Standard v1.1 (BGE 纯文本)", short: "Std v1.1 纯文本", badge: "17 MB 均衡档", size: 16.86,
         full: { pr_auc: 0.97230, r99: 0.4387, r95: 0.8839, f05: 0.9514, f1: 0.9190, stealth95: 0.8500, hard_fpr95: 0.0178, caught99: 136, fp99: 1, caught95: 274, fp95: 14 },
         hard: { pr_auc: 0.95280, r99: 0.3250, r95: 0.8375, f05: 0.9322, f1: 0.8946, stealth95: 0.8375, hard_fpr95: 0.0113, caught99: 52,  fp99: 0, caught95: 134, fp95: 7 } },
-      { id: "lite_v11_txt", tier: "lite", ver: "v11", track: "text", pairV10: "lite_v10_txt", name: "Lite v1.1 (MiniRBT 7MB 纯文本)", short: "Lite v1.1 纯文本", badge: "7MB 跨级暴涨", size: 7.05,
+      { id: "lite_v11_txt", tier: "lite", ver: "v11", track: "text", pairV10: "lite_v10_txt", name: "Lite v1.1 (MiniRBT 7MB 纯文本)", short: "Lite v1.1 纯文本", badge: "Hard +15.6%", size: 7.05,
         full: { pr_auc: 0.96861, r99: 0.3613, r95: 0.8645, f05: 0.9444, f1: 0.9238, stealth95: 0.8438, hard_fpr95: 0.0162, caught99: 112, fp99: 1, caught95: 268, fp95: 14 },
         hard: { pr_auc: 0.94580, r99: 0.1688, r95: 0.8000, f05: 0.9284, f1: 0.9010, stealth95: 0.8000, hard_fpr95: 0.0097, caught99: 27,  fp99: 0, caught95: 128, fp95: 6 } },
 
@@ -432,18 +647,12 @@
       { id: "teacher_ref", tier: "teacher", ver: "ref", track: "text", name: "离线 12 层教师 (ELECTRA-180g FP32)", short: "12L 教师 (390M)", badge: "离线教师参考", size: 390.0,
         full: { pr_auc: 0.98530, r99: 0.7290, r95: 0.9258, f05: 0.9547, f1: 0.9467, stealth95: 0.9187, hard_fpr95: 0.0227, caught99: 226, fp99: 2, caught95: 287, fp95: 15 },
         hard: { pr_auc: 0.97095, r99: 0.4688, r95: 0.8375, f05: 0.9288, f1: 0.9231, stealth95: 0.8375, hard_fpr95: 0.0113, caught99: 75,  fp99: 0, caught95: 134, fp95: 7 } },
-      { id: "rules_prot", tier: "rules", ver: "base", track: "baseline", name: "启发式规则基线（含高阶账号保护）", short: "规则基线", badge: "传统规则对照", size: 0.05,
+      { id: "rules_prot", tier: "rules", ver: "base", track: "baseline", name: "启发式规则基线（含高阶账号保护）", short: "规则基线", badge: "规则对照", size: 0.05,
         full: { pr_auc: 0.88210, r99: 0.3226, r95: 0.4258, f05: 0.8584, f1: 0.8414, stealth95: 0.0000, hard_fpr95: 0.0097, caught99: 100, fp99: 1, caught95: 132, fp95: 6 },
         hard: { pr_auc: 0.67049, r99: 0.0000, r95: 0.0000, f05: 0.7325, f1: 0.7304, stealth95: 0.0000, hard_fpr95: 0.0000, caught99: 0,   fp99: 0, caught95: 0,   fp95: 0 } },
     ];
 
-    let exam = "full";
-    let track = "all";
-    let verMode = "compare";
-    let yAxis = "f05";
-    let sortKey = "f05";
-    let sortAsc = false;
-    let selectedId = "pro_v11_fus";
+    let exam = "full", track = "all", verMode = "compare", yAxis = "f05", sortKey = "f05", sortAsc = false, selectedId = "pro_v11_fus";
 
     function metricsOf(m) {
       const s = m[exam];
@@ -453,11 +662,7 @@
     function pct(v, d = 1) { return (v * 100).toFixed(d) + "%"; }
     function fmtAxis(v, key) { return (key === "r95" || key === "overall") ? (v * 100).toFixed(1) + "%" : v.toFixed(4); }
     function fmtTick(v, key) { return (key === "r95" || key === "overall") ? (v * 100).toFixed(0) + "%" : v.toFixed(3); }
-    function estTextWidth(str) {
-      let w = 0;
-      for (const ch of str) w += ch.charCodeAt(0) > 255 ? 10.6 : 6.4;
-      return w;
-    }
+    function estTextWidth(str) { let w = 0; for (const ch of str) w += ch.charCodeAt(0) > 255 ? 10.6 : 6.4; return w; }
 
     function activeModels() {
       return MODELS.filter((m) => {
@@ -483,8 +688,8 @@
       setActiveBtn(".ver-btn", "ver", verMode);
       setActiveBtn(".y-btn", "y", yAxis);
       document.getElementById("exam-desc").textContent = exam === "full"
-        ? "当前考卷：1,310 题（150 显性 AI + 160 隐蔽 AI + 617 高难真人 + 383 普通真人）"
-        : "当前考卷：777 题去饱和魔鬼卷（仅 160 条规则零分隐蔽 AI vs 617 条高难真人长评，0 送分题！）";
+        ? "当前评估集：1,310 条（150 显性 AI + 160 隐蔽 AI + 617 高难真人 + 383 普通真人）"
+        : "当前评估集：777 条 Hard-Only 子集（仅含 160 条规则零分隐蔽 AI 与 617 条高难真人长评）";
     }
 
     function renderTable() {
@@ -498,30 +703,18 @@
       const tbody = document.getElementById("leaderboard-body");
       tbody.innerHTML = list.map((it, idx) => {
         const s = it.m;
-        const isSel = it.id === selectedId;
-        const isOld = it.ver === "v10";
-        const isBase = it.track === "baseline";
+        const isSel = it.id === selectedId, isOld = it.ver === "v10", isBase = it.track === "baseline";
         const tag = it.ver === "ref" ? "教师" : (it.track === "fusion" ? "端到端" : (it.track === "text" ? "纯文本" : "规则"));
-        const verPill = it.ver === "v11"
-          ? `<span class="pill-v11">v1.1</span>`
-          : (it.ver === "v10" ? `<span class="pill-v10">v1.0</span>` : "");
+        const verPill = it.ver === "v11" ? `<span class="pill-v11">v1.1</span>` : (it.ver === "v10" ? `<span class="pill-v10">v1.0</span>` : "");
         const cleanName = it.name
-          .replace(" [旧]", "")
-          .replace(" + 融合", "")
-          .replace(" 纯文本", "")
+          .replace(" [旧]", "").replace(" + 融合", "").replace(" 纯文本", "")
           .replace("SmoothQuant", "MacBERT-6L")
           .replace("离线 12 层教师 (ELECTRA-180g FP32)", "12L 离线教师 (ELECTRA FP32)")
           .replace("启发式规则基线（含高阶账号保护）", "启发式规则基线 (高阶保护)");
         return `
           <tr data-id="${it.id}" class="${isSel ? "sel" : ""} ${isOld ? "old" : ""}">
             <td class="fw-b ${idx === 0 ? "c-pri" : "muted"}">${idx + 1}</td>
-            <td>
-              <span class="name-flex">
-                ${verPill}
-                <strong class="${isBase ? "muted" : "c-fg"}">${cleanName}</strong>
-                <span class="tag">${tag}</span>
-              </span>
-            </td>
+            <td><span class="name-flex">${verPill}<strong class="${isBase ? "muted" : "c-fg"}">${cleanName}</strong><span class="tag">${tag}</span></span></td>
             <td class="fw-b ${s.f05 >= 0.96 ? "c-pri" : ""}">${s.f05.toFixed(4)}</td>
             <td>${s.pr_auc.toFixed(4)}</td>
             <td class="fw-b ${s.r95 >= 0.90 ? "c-suc" : ""}">${pct(s.r95)}</td>
@@ -534,50 +727,40 @@
       }).join("");
 
       tbody.querySelectorAll("tr").forEach((tr) => {
-        tr.addEventListener("click", () => {
-          selectedId = tr.dataset.id;
-          renderTable();
-          renderDetail();
-          renderPareto();
-        });
+        tr.addEventListener("click", () => { selectedId = tr.dataset.id; renderTable(); renderDetail(); renderPareto(); });
       });
     }
 
     function renderDetail() {
       const item = MODELS.find((x) => x.id === selectedId) || MODELS[0];
-      const s = metricsOf(item);
-      const mob = MOBILE_SPECS[item.tier];
-      const posDenom = exam === "full" ? 310 : 160;
-      const negDenom = exam === "full" ? 1000 : 617;
+      const s = metricsOf(item), mob = MOBILE_SPECS[item.tier];
+      const posDenom = exam === "full" ? 310 : 160, negDenom = exam === "full" ? 1000 : 617;
 
       document.getElementById("detail-title").textContent = item.name;
       document.getElementById("detail-badge").textContent = item.badge;
       document.getElementById("detail-exam-title").textContent = exam === "full"
-        ? "完整考卷真实战绩（310 AI / 1,000 真人）"
-        : "Hard-Only 魔鬼卷战绩（160 隐蔽 AI / 617 高难真人）";
+        ? "完整集计数（310 AI / 1,000 真人）"
+        : "Hard-Only 子集计数（160 隐蔽 AI / 617 高难真人）";
 
       const bars = [
-        { label: "Best F0.5 少误杀平衡分 (↑)", val: s.f05, txt: s.f05.toFixed(4), col: "var(--primary)" },
-        { label: "PR-AUC 全局排序基本功 (↑)", val: s.pr_auc, txt: s.pr_auc.toFixed(4), col: "var(--chart-1)" },
-        { label: "Recall @ P95% 标准净化 (↑)", val: s.r95, txt: pct(s.r95), col: "var(--success)" },
-        { label: "隐蔽 AI 召回 @ P95% (↑)", val: s.stealth95, txt: pct(s.stealth95), col: "var(--chart-2)" },
-        { label: "难负真人保护率 1−FPR (↑)", val: 1 - s.hard_fpr95, txt: pct(1 - s.hard_fpr95, 2) + " (误杀 " + pct(s.hard_fpr95, 2) + ")", col: "var(--warning)" },
+        { label: "Best F0.5", val: s.f05, txt: s.f05.toFixed(4), col: "var(--primary)" },
+        { label: "PR-AUC", val: s.pr_auc, txt: s.pr_auc.toFixed(4), col: "var(--chart-1)" },
+        { label: "Recall @ P95%", val: s.r95, txt: pct(s.r95), col: "var(--success)" },
+        { label: "隐蔽 AI 召回 @ P95%", val: s.stealth95, txt: pct(s.stealth95), col: "var(--chart-2)" },
+        { label: "难负真人保护率 1−FPR", val: 1 - s.hard_fpr95, txt: pct(1 - s.hard_fpr95, 2) + " (误杀 " + pct(s.hard_fpr95, 2) + ")", col: "var(--warning)" },
       ];
       document.getElementById("detail-bars").innerHTML = bars.map((b) => `
         <div>
-          <div class="bar-top">
-            <span class="muted">${b.label}</span>
-            <strong style="font-family:ui-monospace,monospace;">${b.txt}</strong>
-          </div>
+          <div class="bar-top"><span class="muted">${b.label}</span><strong style="font-family:ui-monospace,monospace;">${b.txt}</strong></div>
           <div class="bar-bg"><div class="bar-fill" style="width:${(b.val * 100).toFixed(1)}%;background:${b.col};"></div></div>
         </div>
       `).join("");
 
       document.getElementById("detail-counts").innerHTML = `
         <div>P95 拦截：<strong>${s.caught95} / ${posDenom}</strong></div>
-        <div>P95 误杀：<strong>${s.fp95} / ${negDenom}</strong></div>
+        <div>P95 误判：<strong>${s.fp95} / ${negDenom}</strong></div>
         <div>P99 拦截：<strong>${s.caught99} / ${posDenom}</strong></div>
-        <div>P99 误杀：<strong>${s.fp99} / ${negDenom}</strong></div>
+        <div>P99 误判：<strong>${s.fp99} / ${negDenom}</strong></div>
         <div>Best F1：<strong>${s.f1.toFixed(4)}</strong></div>
         <div>Overall：<strong>${(s.overall * 100).toFixed(1)} / 100</strong></div>
       `;
@@ -593,10 +776,8 @@
     function renderPareto() {
       const svg = document.getElementById("pareto-svg");
       const tip = document.getElementById("pareto-tip");
-      const W = 1000, H = 445;
-      const pad = { l: 68, r: 28, t: 38, b: 56 };
-      const pw = W - pad.l - pad.r;
-      const ph = H - pad.t - pad.b;
+      const W = 1000, H = 445, pad = { l: 68, r: 28, t: 38, b: 56 };
+      const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
 
       const list = activeModels();
       const neural = list.filter((m) => m.tier !== "rules");
@@ -604,72 +785,49 @@
       const ruleVal = metricsOf(ruleBase)[yAxis];
 
       const vals = neural.map((it) => it.m[yAxis]);
-      const dataMin = Math.min(...vals);
-      const dataMax = Math.max(...vals);
+      const dataMin = Math.min(...vals), dataMax = Math.max(...vals);
       const rawSpan = Math.max(0.025, dataMax - dataMin);
       const step = rawSpan <= 0.06 ? 0.005 : (rawSpan <= 0.16 ? 0.01 : 0.02);
       const yMax = Math.min(1.0, Math.ceil((dataMax + rawSpan * 0.22) / step) * step);
       const yMin = Math.max(0.50, Math.floor((dataMin - rawSpan * 0.18) / step) * step);
       const ySpan = Math.max(0.03, yMax - yMin);
 
-      const minLog = Math.log10(4.2);
-      const maxLog = Math.log10(720);
+      const minLog = Math.log10(4.2), maxLog = Math.log10(720);
       const xOf = (mb) => pad.l + ((Math.log10(Math.max(4.2, mb)) - minLog) / (maxLog - minLog)) * pw;
       const yOf = (v) => pad.t + ((yMax - Math.max(yMin, Math.min(yMax, v))) / ySpan) * ph;
 
-      const parts = [];
-      parts.push(`
+      const parts = [`
         <defs>
-          <marker id="arr-up-pri" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-            <path d="M 1 1.5 L 8.5 5 L 1 8.5 z" fill="var(--primary)"/>
-          </marker>
-          <marker id="arr-up-suc" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-            <path d="M 1 1.5 L 8.5 5 L 1 8.5 z" fill="var(--success)"/>
-          </marker>
-          <marker id="arr-gap-l" viewBox="0 0 10 10" refX="3" refY="5" markerWidth="5" markerHeight="5" orient="auto">
-            <path d="M 9 1.5 L 1.5 5 L 9 8.5 z" fill="var(--muted-foreground)"/>
-          </marker>
-          <marker id="arr-gap-r" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto">
-            <path d="M 1 1.5 L 8.5 5 L 1 8.5 z" fill="var(--muted-foreground)"/>
-          </marker>
-          <linearGradient id="sweet-grad" x1="0" y1="0" x2="0.8" y2="1">
-            <stop offset="0%" stop-color="var(--success)" stop-opacity="0.11"/>
-            <stop offset="100%" stop-color="var(--primary)" stop-opacity="0.01"/>
-          </linearGradient>
-          <linearGradient id="front-fus-grad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="var(--success)" stop-opacity="0.16"/>
-            <stop offset="100%" stop-color="var(--success)" stop-opacity="0.00"/>
-          </linearGradient>
-          <pattern id="llm-hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-            <line x1="0" y1="0" x2="0" y2="10" stroke="var(--error)" stroke-width="1.2" stroke-opacity="0.22"/>
-          </pattern>
+          <marker id="arr-up-pri" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 1 1.5 L 8.5 5 L 1 8.5 z" fill="var(--primary)"/></marker>
+          <marker id="arr-up-suc" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 1 1.5 L 8.5 5 L 1 8.5 z" fill="var(--success)"/></marker>
+          <marker id="arr-gap-l" viewBox="0 0 10 10" refX="3" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M 9 1.5 L 1.5 5 L 9 8.5 z" fill="var(--muted-foreground)"/></marker>
+          <marker id="arr-gap-r" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M 1 1.5 L 8.5 5 L 1 8.5 z" fill="var(--muted-foreground)"/></marker>
+          <linearGradient id="sweet-grad" x1="0" y1="0" x2="0.8" y2="1"><stop offset="0%" stop-color="var(--success)" stop-opacity="0.11"/><stop offset="100%" stop-color="var(--primary)" stop-opacity="0.01"/></linearGradient>
+          <linearGradient id="front-fus-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--success)" stop-opacity="0.16"/><stop offset="100%" stop-color="var(--success)" stop-opacity="0.00"/></linearGradient>
+          <pattern id="llm-hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="10" stroke="var(--error)" stroke-width="1.2" stroke-opacity="0.22"/></pattern>
         </defs>
-      `);
+      `];
 
       const swX1 = xOf(4.8), swX2 = xOf(76);
       parts.push(`<rect x="${swX1.toFixed(1)}" y="${pad.t}" width="${(swX2 - swX1).toFixed(1)}" height="${(ph * 0.52).toFixed(1)}" rx="12" fill="url(#sweet-grad)" stroke="var(--success)" stroke-opacity="0.24" stroke-dasharray="5 4"/>`);
-      parts.push(`<text x="${(swX1 + 12).toFixed(1)}" y="${pad.t - 10}" fill="var(--success)" font-size="11.5" font-weight="700">↖ 黄金端侧甜点区（7–49 MB · 纯 CPU 毫秒级 · 零 GPU 占用）</text>`);
+      parts.push(`<text x="${(swX1 + 10).toFixed(1)}" y="${pad.t - 10}" fill="var(--success)" font-size="11.5" font-weight="700">端侧轻量区间（7–49 MB · 纯 CPU 推理）</text>`);
 
-      const lx1 = xOf(350), lx2 = xOf(650);
-      const lxc = (lx1 + lx2) / 2;
+      const lx1 = xOf(350), lx2 = xOf(650), lxc = (lx1 + lx2) / 2;
       const lBoxW = Math.max(lx2 - lx1 - 12, 126);
-      const lBoxX = Math.min(W - pad.r - lBoxW - 2, lxc - lBoxW / 2);
-      const lBoxY = pad.t + ph * 0.62;
+      const lBoxX = Math.min(W - pad.r - lBoxW - 2, lxc - lBoxW / 2), lBoxY = pad.t + ph * 0.62;
       parts.push(`<rect x="${lx1.toFixed(1)}" y="${pad.t}" width="${(lx2 - lx1).toFixed(1)}" height="${ph}" rx="8" fill="url(#llm-hatch)" stroke="var(--error)" stroke-opacity="0.50" stroke-dasharray="5 4"/>`);
       parts.push(`<rect x="${lBoxX.toFixed(1)}" y="${lBoxY.toFixed(1)}" width="${lBoxW.toFixed(1)}" height="58" rx="7" fill="var(--card)" fill-opacity="0.95" stroke="var(--error)" stroke-opacity="0.40"/>`);
       parts.push(`<text x="${(lBoxX + lBoxW / 2).toFixed(1)}" y="${(lBoxY + 19).toFixed(1)}" fill="var(--error)" font-size="11" font-weight="800" text-anchor="middle">0.5B–0.6B 端侧区间</text>`);
-      parts.push(`<text x="${(lBoxX + lBoxW / 2).toFixed(1)}" y="${(lBoxY + 35).toFixed(1)}" fill="var(--error)" font-size="10" opacity="0.92" text-anchor="middle">350–614 MB · 抢 GPU</text>`);
-      parts.push(`<text x="${(lBoxX + lBoxW / 2).toFixed(1)}" y="${(lBoxY + 50).toFixed(1)}" fill="var(--muted-foreground)" font-size="10" text-anchor="middle">体积膨胀 7–50×</text>`);
+      parts.push(`<text x="${(lBoxX + lBoxW / 2).toFixed(1)}" y="${(lBoxY + 35).toFixed(1)}" fill="var(--error)" font-size="10" opacity="0.92" text-anchor="middle">350–614 MB</text>`);
+      parts.push(`<text x="${(lBoxX + lBoxW / 2).toFixed(1)}" y="${(lBoxY + 50).toFixed(1)}" fill="var(--muted-foreground)" font-size="10" text-anchor="middle">体积大 7–50×</text>`);
 
-      const gapY = pad.t + ph - 22;
-      const gx1 = xOf(58), gx2 = xOf(330);
+      const gapY = pad.t + ph - 22, gx1 = xOf(58), gx2 = xOf(330);
       parts.push(`<line x1="${gx1.toFixed(1)}" y1="${gapY.toFixed(1)}" x2="${gx2.toFixed(1)}" y2="${gapY.toFixed(1)}" stroke="var(--muted-foreground)" stroke-width="1" stroke-dasharray="3 3" opacity="0.55" marker-start="url(#arr-gap-l)" marker-end="url(#arr-gap-r)"/>`);
       parts.push(`<rect x="${((gx1 + gx2) / 2 - 58).toFixed(1)}" y="${(gapY - 10).toFixed(1)}" width="116" height="19" rx="9" fill="var(--background)" stroke="var(--border)"/>`);
       parts.push(`<text x="${((gx1 + gx2) / 2).toFixed(1)}" y="${(gapY + 3).toFixed(1)}" fill="var(--muted-foreground)" font-size="10.5" font-weight="600" text-anchor="middle">体积轻 7–50×</text>`);
 
       for (let i = 0; i <= 4; i++) {
-        const v = yMin + (ySpan * i) / 4;
-        const y = yOf(v);
+        const v = yMin + (ySpan * i) / 4, y = yOf(v);
         parts.push(`<line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${W - pad.r}" y2="${y.toFixed(1)}" stroke="var(--border)" stroke-width="${i === 0 ? 1.2 : 0.9}" stroke-dasharray="${i === 0 ? "" : "3 3"}"/>`);
         parts.push(`<text x="${pad.l - 10}" y="${(y + 4).toFixed(1)}" fill="var(--muted-foreground)" font-size="11" text-anchor="end" font-family="monospace">${fmtTick(v, yAxis)}</text>`);
       }
@@ -685,26 +843,24 @@
         const isTier = (mb === 7 || mb === 17 || mb === 50);
         parts.push(`<text x="${x.toFixed(1)}" y="${H - pad.b + 18}" fill="${isTier ? "var(--foreground)" : "var(--muted-foreground)"}" font-size="11" font-weight="${isTier ? 700 : 400}" text-anchor="middle" font-family="monospace">${mb}MB</text>`);
       });
-      parts.push(`<text x="${(pad.l + pw / 2).toFixed(1)}" y="${H - 10}" fill="var(--muted-foreground)" font-size="12" text-anchor="middle">模型 ONNX 磁盘体积（对数刻度 · 越靠左越轻巧）</text>`);
-      parts.push(`<text x="18" y="${(pad.t + ph / 2).toFixed(1)}" fill="var(--muted-foreground)" font-size="12" font-weight="600" text-anchor="middle" transform="rotate(-90, 18, ${(pad.t + ph / 2).toFixed(1)})">${METRIC_INFO[yAxis].tag.split("·")[0].trim()} (↑ 越高越好)</text>`);
+      parts.push(`<text x="${(pad.l + pw / 2).toFixed(1)}" y="${H - 10}" fill="var(--muted-foreground)" font-size="12" text-anchor="middle">模型 ONNX 磁盘体积（对数刻度 · 越靠左越轻量）</text>`);
+      parts.push(`<text x="18" y="${(pad.t + ph / 2).toFixed(1)}" fill="var(--muted-foreground)" font-size="12" font-weight="600" text-anchor="middle" transform="rotate(-90, 18, ${(pad.t + ph / 2).toFixed(1)})">${METRIC_INFO[yAxis].tag.split("·")[0].trim()} (越高越好)</text>`);
 
       const ruleDisp = fmtAxis(ruleVal, yAxis);
       if (ruleVal >= yMin) {
         const ry = yOf(ruleVal);
         parts.push(`<line x1="${pad.l}" y1="${ry.toFixed(1)}" x2="${W - pad.r}" y2="${ry.toFixed(1)}" stroke="var(--warning)" stroke-width="1.5" stroke-dasharray="6 4"/>`);
-        parts.push(`<text x="${pad.l + 8}" y="${(ry - 6).toFixed(1)}" fill="var(--warning)" font-size="11" font-weight="700">传统启发式规则基线 = ${ruleDisp}</text>`);
+        parts.push(`<text x="${pad.l + 8}" y="${(ry - 6).toFixed(1)}" fill="var(--warning)" font-size="11" font-weight="700">启发式规则基线 = ${ruleDisp}</text>`);
       } else {
-        parts.push(`<rect x="${pad.l + 8}" y="${H - pad.b - 28}" width="278" height="22" rx="6" fill="var(--card)" stroke="var(--warning)" stroke-opacity="0.55"/>`);
-        parts.push(`<text x="${pad.l + 18}" y="${H - pad.b - 13}" fill="var(--warning)" font-size="11" font-weight="700">↓ 传统规则基线仅 ${ruleDisp}（低于纵轴底线）</text>`);
+        parts.push(`<rect x="${pad.l + 8}" y="${H - pad.b - 28}" width="268" height="22" rx="6" fill="var(--card)" stroke="var(--warning)" stroke-opacity="0.55"/>`);
+        parts.push(`<text x="${pad.l + 18}" y="${H - pad.b - 13}" fill="var(--warning)" font-size="11" font-weight="700">启发式规则基线 = ${ruleDisp}（低于纵轴底线）</text>`);
       }
 
       function drawFrontier(trackName, colorVar, shaded) {
         const pts = neural.filter((it) => it.ver === "v11" && it.track === trackName).sort((a, b) => a.size - b.size);
         const front = [];
         let bestY = -1;
-        pts.forEach((p) => {
-          if (p.m[yAxis] >= bestY - 0.0005) { front.push(p); bestY = Math.max(bestY, p.m[yAxis]); }
-        });
+        pts.forEach((p) => { if (p.m[yAxis] >= bestY - 0.0005) { front.push(p); bestY = Math.max(bestY, p.m[yAxis]); } });
         if (front.length >= 2) {
           const lineD = front.map((p, i) => `${i === 0 ? "M" : "L"} ${xOf(p.size).toFixed(1)} ${yOf(p.m[yAxis]).toFixed(1)}`).join(" ");
           if (shaded) {
@@ -725,9 +881,7 @@
           const x = xOf(v11.size), y1 = yOf(v10.m[yAxis]), y2 = yOf(v11.m[yAxis]);
           const dy = y1 - y2;
           if (dy > 16) {
-            const isFus = v11.track === "fusion";
-            const col = isFus ? "var(--success)" : "var(--primary)";
-            const mark = isFus ? "url(#arr-up-suc)" : "url(#arr-up-pri)";
+            const isFus = v11.track === "fusion", col = isFus ? "var(--success)" : "var(--primary)", mark = isFus ? "url(#arr-up-suc)" : "url(#arr-up-pri)";
             parts.push(`<line x1="${x.toFixed(1)}" y1="${(y1 - 6).toFixed(1)}" x2="${x.toFixed(1)}" y2="${(y2 + 9).toFixed(1)}" stroke="${col}" stroke-width="1.8" stroke-dasharray="3 2.5" opacity="0.82" marker-end="${mark}"/>`);
             if (dy >= 38) {
               const diff = v11.m[yAxis] - v10.m[yAxis];
@@ -741,10 +895,7 @@
         });
       }
 
-      const dotObstacles = neural.map((it) => {
-        const cx = xOf(it.size), cy = yOf(it.m[yAxis]);
-        return { id: it.id, x1: cx - 10, x2: cx + 10, y1: cy - 10, y2: cy + 10 };
-      });
+      const dotObstacles = neural.map((it) => { const cx = xOf(it.size), cy = yOf(it.m[yAxis]); return { id: it.id, x1: cx - 10, x2: cx + 10, y1: cy - 10, y2: cy + 10 }; });
       const staticObstacles = [
         { x1: lBoxX - 2, x2: lBoxX + lBoxW + 2, y1: lBoxY - 2, y2: lBoxY + 60 },
         { x1: pad.l + 4, x2: pad.l + 292, y1: H - pad.b - 32, y2: H - pad.b },
@@ -811,8 +962,7 @@
       });
 
       pillMap.forEach((b, id) => {
-        const it = neural.find((x) => x.id === id);
-        const isSel = id === selectedId;
+        const it = neural.find((x) => x.id === id), isSel = id === selectedId;
         const col = it.ver === "ref" ? "var(--warning)" : (it.track === "fusion" ? "var(--success)" : "var(--primary)");
         const edgeX = b.cx < b.x1 ? b.x1 : (b.cx > b.x2 ? b.x2 : b.cx);
         const edgeY = b.cy < b.y1 ? b.y1 : (b.cy > b.y2 ? b.y2 : b.cy);
@@ -853,15 +1003,12 @@
           `;
           const box = svg.parentElement.getBoundingClientRect();
           const ex = e.clientX - box.left, ey = e.clientY - box.top;
-          tip.style.left = (ex + 16 + 265 > box.width ? Math.max(8, ex - 275) : ex + 16) + "px";
+          tip.style.left = (ex + 16 + 275 > box.width ? Math.max(8, ex - 285) : ex + 16) + "px";
           tip.style.top = (ey + 148 > box.height ? Math.max(8, ey - 142) : Math.max(8, ey - 10)) + "px";
           tip.style.opacity = "1";
         });
         el.addEventListener("mouseleave", () => { tip.style.opacity = "0"; });
-        el.addEventListener("click", () => {
-          selectedId = el.dataset.id;
-          renderTable(); renderDetail(); renderPareto();
-        });
+        el.addEventListener("click", () => { selectedId = el.dataset.id; renderTable(); renderDetail(); renderPareto(); });
       });
     }
 
@@ -889,6 +1036,492 @@
     });
 
     renderAll();
+  </script>
+
+  <!-- ======================== SCRIPT: TAB 2 ARENA ======================== -->
+  <script>
+    (() => {
+      const A_METRIC_INFO = {
+        f05:    { tag: "Best F0.5 · 越高越好", text: "将精确率（少误杀）权重设为召回率 2 倍的综合单点分，适合静默过滤场景。" },
+        pr_auc: { tag: "PR-AUC · 越高越好", text: "不固定阈值时的全局排序能力（满分 1.0）；接近 0.23（正例占比）说明接近随机排序。" },
+        r95:    { tag: "Recall@P95% · 越高越好", text: "精确率 ≥ 95%（每过滤 20 条最多 1 条误判/争议）时的 AI 召回率；0.0% 表示全阈值段均未达到 95% 精确率。" },
+        r99:    { tag: "Recall@P99% · 越高越好", text: "精确率 ≥ 99%（每过滤 100 条最多 1 条误判）时的保守档召回率。" },
+        ootb:   { tag: "开箱默认档实测", text: "保持各插件/脚本默认出厂阈值，在 1,310 条完整集上的精确率、总召回率、隐蔽 AI 召回率与难负真人误杀率。" },
+        size:   { tag: "模型体积 · 越小越轻", text: "推理权重磁盘体积（MB）；纯规则脚本标为规则，HF 模型为 FP32 权重体积，Qwen 为 Q4 端侧估算体积。" },
+      };
+
+      const A_DATA = [
+        { id:"oj_pro_fus", name:"OjinjinNet-Pro v1.1 (+1KB融合)", short:"Pro v1.1 融合", camp:"ours", track:"fusion", size:49.49, note:"纯CPU ONNX INT8", full:{ pr_auc:0.99357, r99:0.8323, r95:0.9710, f05:0.9702, stealth95:0.9437, hard_fpr95:0.0227, caught95:301, fp95:15 }, hard:{ pr_auc:0.97894, r99:0.7000, r95:0.8938, f05:0.9408, stealth95:0.8938, hard_fpr95:0.0113 } },
+        { id:"oj_lite_fus", name:"OjinjinNet-Lite v1.1 (+1KB融合)", short:"Lite v1.1 融合", camp:"ours", track:"fusion", size:7.05, note:"纯CPU ONNX INT8", full:{ pr_auc:0.99022, r99:0.7355, r95:0.9484, f05:0.9686, stealth95:0.9000, hard_fpr95:0.0227, caught95:294, fp95:15 }, hard:{ pr_auc:0.96621, r99:0.3937, r95:0.8500, f05:0.9358, stealth95:0.8500, hard_fpr95:0.0113 } },
+        { id:"oj_pro_txt", name:"OjinjinNet-Pro v1.1 (纯文本)", short:"Pro v1.1 纯文本", camp:"ours", track:"text", size:49.49, note:"纯CPU ONNX INT8", full:{ pr_auc:0.98256, r99:0.7355, r95:0.9355, f05:0.9685, stealth95:0.9187, hard_fpr95:0.0211, caught95:290, fp95:15 }, hard:{ pr_auc:0.96819, r99:0.3375, r95:0.8938, f05:0.9563, stealth95:0.8938, hard_fpr95:0.0113 } },
+        { id:"oj_std_fus", name:"OjinjinNet-Standard v1.1 (+1KB融合)", short:"Std v1.1 融合", camp:"ours", track:"fusion", size:16.86, note:"纯CPU ONNX INT8", full:{ pr_auc:0.99134, r99:0.8258, r95:0.9581, f05:0.9684, stealth95:0.9187, hard_fpr95:0.0227, caught95:297, fp95:15 }, hard:{ pr_auc:0.97107, r99:0.6687, r95:0.8625, f05:0.9375, stealth95:0.8625, hard_fpr95:0.0113 } },
+        { id:"oj_std_txt", name:"OjinjinNet-Standard v1.1 (纯文本)", short:"Std v1.1 纯文本", camp:"ours", track:"text", size:16.86, note:"纯CPU ONNX INT8", full:{ pr_auc:0.97230, r99:0.4387, r95:0.8839, f05:0.9514, stealth95:0.8500, hard_fpr95:0.0178, caught95:274, fp95:14 }, hard:{ pr_auc:0.95280, r99:0.3250, r95:0.8375, f05:0.9322, stealth95:0.8375, hard_fpr95:0.0113 } },
+        { id:"oj_lite_txt", name:"OjinjinNet-Lite v1.1 (纯文本)", short:"Lite v1.1 纯文本", camp:"ours", track:"text", size:7.05, note:"纯CPU ONNX INT8", full:{ pr_auc:0.96861, r99:0.3613, r95:0.8645, f05:0.9444, stealth95:0.8438, hard_fpr95:0.0162, caught95:268, fp95:14 }, hard:{ pr_auc:0.94580, r99:0.1688, r95:0.8000, f05:0.9284, stealth95:0.8000, hard_fpr95:0.0097 } },
+
+        { id:"rule_c", name:"社区规则插件 C（三层加权评分 · 离线）", short:"插件 C", camp:"bili_js", track:"fusion", size:0.05, note:"默认≥60 / 疑似≥35", ootb:{ default_pred:{ prec:0.9219, rec:0.5710, f05:0.8210, obvious_rec:0.9800, stealth_rec:0.1875, hard_fpr:0.0243, tp:177, fp:15 }, strict_pred:{ prec:0.7760, rec:0.7710, f05:0.7750, obvious_rec:1.0000, stealth_rec:0.5563, hard_fpr:0.1118, tp:239, fp:69 } }, full:{ pr_auc:0.87637, r99:0.1774, r95:0.2968, f05:0.8403 }, hard:{ pr_auc:0.57119, r99:0.0, r95:0.0, f05:0.6069 } },
+        { id:"rule_a", name:"社区规则插件 A（高星多规则评分 · 离线）", short:"插件 A", camp:"bili_js", track:"fusion", size:0.05, note:"默认≥60 / 疑似≥35", ootb:{ default_pred:{ prec:0.9136, rec:0.4774, f05:0.7724, obvious_rec:0.9733, stealth_rec:0.0125, hard_fpr:0.0227, tp:148, fp:14 }, strict_pred:{ prec:0.7826, rec:0.7548, f05:0.7769, obvious_rec:1.0000, stealth_rec:0.5250, hard_fpr:0.1053, tp:234, fp:65 } }, full:{ pr_auc:0.87716, r99:0.1839, r95:0.3258, f05:0.8375 }, hard:{ pr_auc:0.57002, r99:0.0, r95:0.0, f05:0.6059 } },
+        { id:"rule_e", name:"社区规则插件 E（话术模式分值折叠）", short:"插件 E", camp:"bili_js", track:"fusion", size:0.05, note:"规则打分折叠(默认≥4.5)", ootb:{ default_pred:{ prec:0.9905, rec:0.3355, f05:0.7123, obvious_rec:0.5733, stealth_rec:0.1125, hard_fpr:0.0016, tp:104, fp:1 } }, full:{ pr_auc:0.85505, r99:0.3355, r95:0.3613, f05:0.8321 }, hard:{ pr_auc:0.65932, r99:0.0, r95:0.0, f05:0.6800 } },
+        { id:"rule_d", name:"社区规则插件 D（3,100 评论实证调参）", short:"插件 D", camp:"bili_js", track:"fusion", size:0.05, note:"规则最佳P95(默认≥70)", ootb:{ default_pred:{ prec:0.9583, rec:0.5194, f05:0.8198, obvious_rec:0.8667, stealth_rec:0.1938, hard_fpr:0.0113, tp:161, fp:7 }, strict_pred:{ prec:0.9055, rec:0.5871, f05:0.8169, obvious_rec:0.9000, stealth_rec:0.2938, hard_fpr:0.0308, tp:182, fp:19 } }, full:{ pr_auc:0.66949, r99:0.3194, r95:0.5258, f05:0.8241 }, hard:{ pr_auc:0.38070, r99:0.0250, r95:0.0250, f05:0.5556 } },
+        { id:"rule_k", name:"社区规则插件 K（强证据自述优先脚本）", short:"插件 K", camp:"bili_js", track:"fusion", size:0.05, note:"强证据自述才触发", ootb:{ default_pred:{ prec:0.0, rec:0.0, f05:0.0, obvious_rec:0.0, stealth_rec:0.0, hard_fpr:0.0, tp:0, fp:0 }, strict_pred:{ prec:1.0, rec:0.0065, f05:0.0314, obvious_rec:0.0133, stealth_rec:0.0, hard_fpr:0.0, tp:2, fp:0 } }, full:{ pr_auc:0.67091, r99:0.1065, r95:0.1065, f05:0.8236 }, hard:{ pr_auc:0.41178, r99:0.0, r95:0.0, f05:0.6197 } },
+        { id:"rule_g", name:"社区规则插件 G（四特征联合过滤脚本）", short:"插件 G", camp:"bili_js", track:"fusion", size:0.05, note:"四特征联合规则", ootb:{ default_pred:{ prec:0.8471, rec:0.6968, f05:0.8120, obvious_rec:0.8667, stealth_rec:0.5375, hard_fpr:0.0535, tp:216, fp:39 } }, full:{ pr_auc:0.66196, r99:0.0, r95:0.0, f05:0.8120 }, hard:{ pr_auc:0.48368, r99:0.0, r95:0.0, f05:0.6761 } },
+        { id:"rule_f", name:"社区规则插件 F（多来源独立证据规则）", short:"插件 F", camp:"bili_js", track:"fusion", size:0.05, note:"独立证据隐藏/疑似", ootb:{ default_pred:{ prec:0.9796, rec:0.1548, f05:0.4743, obvious_rec:0.2800, stealth_rec:0.0375, hard_fpr:0.0016, tp:48, fp:1 }, strict_pred:{ prec:0.9048, rec:0.5516, f05:0.8021, obvious_rec:0.8067, stealth_rec:0.3125, hard_fpr:0.0292, tp:171, fp:18 } }, full:{ pr_auc:0.61677, r99:0.0, r95:0.1548, f05:0.8021 }, hard:{ pr_auc:0.37592, r99:0.0, r95:0.0, f05:0.5787 } },
+        { id:"rule_i", name:"社区规则插件 I（多维 + 伪口语规则）", short:"插件 I", camp:"bili_js", track:"fusion", size:0.05, note:"默认≥55", ootb:{ default_pred:{ prec:0.7571, rec:0.5129, f05:0.6913, obvious_rec:0.7333, stealth_rec:0.3063, hard_fpr:0.0729, tp:159, fp:51 }, strict_pred:{ prec:0.7387, rec:0.5290, f05:0.6845, obvious_rec:0.7333, stealth_rec:0.3375, hard_fpr:0.0843, tp:164, fp:58 } }, full:{ pr_auc:0.56202, r99:0.0097, r95:0.0097, f05:0.7285 }, hard:{ pr_auc:0.32901, r99:0.0, r95:0.0, f05:0.5022 } },
+        { id:"rule_h", name:"社区规则插件 H（低等级 &lt;Lv3 + 关键词）", short:"插件 H", camp:"bili_js", track:"fusion", size:0.05, note:"屏蔽 Lv&lt;3 + 关键词", ootb:{ default_pred:{ prec:0.6636, rec:0.9355, f05:0.7046, obvious_rec:0.9933, stealth_rec:0.8812, hard_fpr:0.1783, tp:290, fp:147 } }, full:{ pr_auc:0.63607, r99:0.0, r95:0.0, f05:0.7046 }, hard:{ pr_auc:0.51950, r99:0.0, r95:0.0, f05:0.6057 } },
+        { id:"rule_j", name:"社区规则插件 J（@ 门控多维评分）", short:"插件 J", camp:"bili_js", track:"fusion", size:0.05, note:"默认需@且≥6", ootb:{ default_pred:{ prec:0.8148, rec:0.0710, f05:0.2632, obvious_rec:0.0733, stealth_rec:0.0688, hard_fpr:0.0081, tp:22, fp:5 }, strict_pred:{ prec:0.7192, rec:0.6032, f05:0.6926, obvious_rec:0.6467, stealth_rec:0.5625, hard_fpr:0.1183, tp:187, fp:73 } }, full:{ pr_auc:0.66463, r99:0.0097, r95:0.0097, f05:0.6926 }, hard:{ pr_auc:0.49444, r99:0.0125, r95:0.0125, f05:0.5542 } },
+        { id:"frozen_bge_centroid", name:"冻结 BGE-small-zh-v1.5 向量（50正+50负质心上限）", short:"冻结 BGE 质心上限", camp:"hf_neural", track:"text", size:24.0, note:"WebGPU冻结向量上限", full:{ pr_auc:0.67895, r99:0.0581, r95:0.0613, f05:0.6657 }, hard:{ pr_auc:0.61286, r99:0.0813, r95:0.0813, f05:0.6158 } },
+        { id:"rule_l", name:"社区规则插件 L（人设 + 自我声明规则）", short:"插件 L", camp:"bili_js", track:"fusion", size:0.05, note:"保守人设规则", ootb:{ default_pred:{ prec:1.0, rec:0.0355, f05:0.1554, obvious_rec:0.0733, stealth_rec:0.0, hard_fpr:0.0, tp:11, fp:0 }, strict_pred:{ prec:0.9216, rec:0.3032, f05:0.6546, obvious_rec:0.5533, stealth_rec:0.0688, hard_fpr:0.0130, tp:94, fp:8 } }, full:{ pr_auc:0.45089, r99:0.0355, r95:0.0355, f05:0.6546 }, hard:{ pr_auc:0.23794, r99:0.0, r95:0.0, f05:0.2448 } },
+        { id:"rule_b_t1", name:"社区规则插件 B（高星三档正则 · 轻量档）", short:"插件 B 轻量档", camp:"bili_js", track:"fusion", size:0.05, note:"关键词轻量档", ootb:{ default_pred:{ prec:0.6800, rec:0.5484, f05:0.6489, obvious_rec:0.7933, stealth_rec:0.3187, hard_fpr:0.1005, tp:170, fp:80 } }, full:{ pr_auc:0.47977, r99:0.0, r95:0.0, f05:0.6489 }, hard:{ pr_auc:0.28414, r99:0.0, r95:0.0, f05:0.4167 } },
+        { id:"rule_a_txt", name:"社区规则插件 A（仅纯文本打分函数）", short:"插件 A 纯文本", camp:"bili_js", track:"text", size:0.05, note:"剥离元信息纯文本", ootb:{}, full:{ pr_auc:0.46243, r99:0.0, r95:0.0, f05:0.5308 }, hard:{ pr_auc:0.21044, r99:0.0, r95:0.0, f05:0.2553 } },
+        { id:"rule_b_t3", name:"社区规则插件 B（高星三档正则 · 激进档）", short:"插件 B 激进档", camp:"bili_js", track:"fusion", size:0.05, note:"+冒号/引号/破折号", ootb:{ default_pred:{ prec:0.4397, rec:0.8355, f05:0.4857, obvious_rec:0.9600, stealth_rec:0.7188, hard_fpr:0.3987, tp:259, fp:330 } }, full:{ pr_auc:0.40632, r99:0.0, r95:0.0, f05:0.4857 }, hard:{ pr_auc:0.28688, r99:0.0, r95:0.0, f05:0.3585 } },
+        { id:"anxforever_bert_zh", name:"AnxForever/chinese-ai-detector-bert", short:"AnxForever BERT", camp:"hf_neural", track:"text", size:390.1, note:"中文BERT检测器", full:{ pr_auc:0.38153, r99:0.0, r95:0.0, f05:0.4692 }, hard:{ pr_auc:0.32795, r99:0.0, r95:0.0, f05:0.4534 } },
+        { id:"rule_b_t2", name:"社区规则插件 B（高星三档正则 · 标准档）", short:"插件 B 标准档", camp:"bili_js", track:"fusion", size:0.05, note:"+@人规则", ootb:{ default_pred:{ prec:0.4022, rec:0.5839, f05:0.4289, obvious_rec:0.8267, stealth_rec:0.3563, hard_fpr:0.3290, tp:181, fp:269 } }, full:{ pr_auc:0.33332, r99:0.0, r95:0.0, f05:0.4289 }, hard:{ pr_auc:0.21066, r99:0.0, r95:0.0, f05:0.2448 } },
+        { id:"frozen_bge_k3", name:"冻结 BGE-small-zh-v1.5 向量（k=3 实际模式）", short:"冻结 BGE kNN", camp:"hf_neural", track:"text", size:24.0, note:"WebGPU冻结向量(50正例)", full:{ pr_auc:0.33354, r99:0.0, r95:0.0, f05:0.4149 }, hard:{ pr_auc:0.25589, r99:0.0, r95:0.0, f05:0.3258 } },
+        { id:"yuchuantian_zhv3short", name:"yuchuantian/AIGC_detector_zhv3short", short:"MPU zhv3-short", camp:"hf_neural", track:"text", size:390.1, note:"ICLR'24 短文本中文AIGC", full:{ pr_auc:0.35249, r99:0.0, r95:0.0, f05:0.3759 }, hard:{ pr_auc:0.29794, r99:0.0, r95:0.0, f05:0.3443 } },
+        { id:"qwen3_06b_zeroshot", name:"Qwen/Qwen3-0.6B (零样本 596M · Q4~420M)", short:"Qwen3-0.6B", camp:"mobile_llm", track:"text", size:420.0, note:"596M 端侧小大模型零样本", full:{ pr_auc:0.29865, r99:0.0, r95:0.0, f05:0.3552 }, hard:{ pr_auc:0.25827, r99:0.0, r95:0.0, f05:0.3125 } },
+        { id:"mokawa_cmj_2026", name:"mokawa3018/cmj-chinese-aigc-text-detector", short:"CMJ AIGC", camp:"hf_neural", track:"text", size:390.1, note:"中文AIGC检测模型", full:{ pr_auc:0.31744, r99:0.0, r95:0.0, f05:0.3512 }, hard:{ pr_auc:0.34667, r99:0.0, r95:0.0, f05:0.4073 } },
+        { id:"qwen25_05b_zeroshot", name:"Qwen/Qwen2.5-0.5B-Instruct (零样本 494M · Q4~380M)", short:"Qwen2.5-0.5B", camp:"mobile_llm", track:"text", size:380.0, note:"494M 端侧小大模型零样本", full:{ pr_auc:0.27082, r99:0.0032, r95:0.0032, f05:0.3341 }, hard:{ pr_auc:0.20860, r99:0.0063, r95:0.0063, f05:0.2618 } },
+        { id:"yuchuantian_zhv3", name:"yuchuantian/AIGC_detector_zhv3", short:"MPU zhv3", camp:"hf_neural", track:"text", size:390.1, note:"HF高下载中文AIGC", full:{ pr_auc:0.32677, r99:0.0, r95:0.0, f05:0.3332 }, hard:{ pr_auc:0.29811, r99:0.0, r95:0.0, f05:0.3092 } },
+        { id:"bibbbu_xlmr_multi", name:"bibbbu/multilingual-ai-human-detector_xlm-roberta-base", short:"XLM-R 1.06GB", camp:"hf_neural", track:"text", size:1060.7, note:"1.06GB 多语言XLM-R", full:{ pr_auc:0.23589, r99:0.0, r95:0.0, f05:0.3297 }, hard:{ pr_auc:0.24083, r99:0.0, r95:0.0, f05:0.3125 } },
+        { id:"yuchuantian_zhv2", name:"yuchuantian/AIGC_detector_zhv2", short:"MPU zhv2", camp:"hf_neural", track:"text", size:390.1, note:"中文RoBERTa MPU v2", full:{ pr_auc:0.19194, r99:0.0, r95:0.0, f05:0.2936 }, hard:{ pr_auc:0.18320, r99:0.0, r95:0.0, f05:0.2705 } },
+        { id:"hc3_roberta_zh", name:"Hello-SimpleAI/chatgpt-detector-roberta-chinese", short:"HC3 RoBERTa", camp:"hf_neural", track:"text", size:390.1, note:"经典HC3中文检测器", full:{ pr_auc:0.19127, r99:0.0, r95:0.0, f05:0.2902 }, hard:{ pr_auc:0.24162, r99:0.0, r95:0.0, f05:0.3058 } },
+        { id:"qiubin_aigc_zh", name:"qiubin/AIGC_text_detector_zh", short:"Qiubin AIGC", camp:"hf_neural", track:"text", size:475.5, note:"中文AIGC文本检测", full:{ pr_auc:0.17559, r99:0.0, r95:0.0, f05:0.2797 }, hard:{ pr_auc:0.17513, r99:0.0, r95:0.0, f05:0.2448 } },
+      ];
+
+      let aExam = "full", aCamp = "all", aY = "f05", aBfMode = "all", aSort = "f05", aAsc = false;
+      const pct = (v, d = 1) => (v * 100).toFixed(d) + "%";
+      const fmtVal = (v, k) => k === "r95" ? pct(v) : v.toFixed(4);
+      const estW = (s) => { const t = s.replace(/&lt;|&gt;/g, "<"); let w = 0; for (const c of t) w += c.charCodeAt(0) > 255 ? 10.4 : 6.2; return w; };
+
+      function setBtn(sel, attr, val) {
+        document.querySelectorAll(sel).forEach((b) => {
+          const on = b.dataset[attr] === val;
+          b.style.background = on ? "var(--primary)" : "var(--background)";
+          b.style.color = on ? "var(--primary-foreground)" : "var(--foreground)";
+          b.style.borderColor = on ? "var(--primary)" : "var(--border)";
+        });
+      }
+
+      function placePills(pts, W, H, pad, extraObs = []) {
+        const placed = [];
+        const dotObs = pts.map((p) => ({ x1: p.cx - 9, x2: p.cx + 9, y1: p.cy - 9, y2: p.cy + 9 }));
+        const map = new Map();
+        const sorted = [...pts].sort((a, b) => (b.prio || 0) - (a.prio || 0) || a.cy - b.cy);
+
+        for (const p of sorted) {
+          if (!p.label) continue;
+          const pw = estW(p.label) + 14, ph = 20;
+          const leftFirst = p.cx > W * 0.62;
+          const cands = leftFirst
+            ? [
+                [-14, 0, "end"], [-14, -24, "end"], [-14, 24, "end"],
+                [0, -24, "middle"], [0, 26, "middle"],
+                [-24, -44, "end"], [-24, 44, "end"],
+                [14, 0, "start"], [14, -24, "start"], [14, 24, "start"],
+                [-36, -66, "end"], [-36, 66, "end"],
+                [-14, -84, "end"], [-14, 84, "end"],
+                [22, -46, "start"], [22, 46, "start"],
+                [-90, -24, "end"], [-90, 24, "end"], [-90, -52, "end"], [-90, 52, "end"],
+                [0, -56, "middle"], [0, 56, "middle"],
+              ]
+            : [
+                [14, 0, "start"], [14, -22, "start"], [14, 22, "start"],
+                [-14, 0, "end"], [0, -22, "middle"], [0, 24, "middle"],
+                [22, -38, "start"], [22, 38, "start"],
+                [48, 0, "start"], [85, 0, "start"],
+                [-16, -24, "end"], [-16, 24, "end"],
+                [30, -56, "start"], [30, 56, "start"],
+                [-28, -44, "end"], [-28, 44, "end"],
+                [16, -74, "start"], [16, 74, "start"],
+                [-36, -68, "end"], [-36, 68, "end"],
+                [0, -56, "middle"], [0, 56, "middle"],
+              ];
+
+          let best = null, bestPen = Infinity;
+          for (const [dx, dy, anc] of cands) {
+            const ax = p.cx + dx, ay = p.cy + dy;
+            const x1 = anc === "end" ? ax - pw : (anc === "middle" ? ax - pw / 2 : ax);
+            const x2 = x1 + pw, y1 = ay - ph / 2, y2 = ay + ph / 2;
+            if (x1 < pad.l + 3 || x2 > W - pad.r - 3 || y1 < pad.t + 3 || y2 > H - pad.b + 8) continue;
+            let pen = Math.hypot(dx, dy) * 0.14;
+            for (const q of placed) if (!(x2 < q.x1 - 5 || x1 > q.x2 + 5 || y2 < q.y1 - 4 || y1 > q.y2 + 4)) pen += 6000;
+            for (const d of dotObs) if (!(x2 < d.x1 - 3 || x1 > d.x2 + 3 || y2 < d.y1 - 3 || y1 > d.y2 + 3)) pen += 1800;
+            for (const o of extraObs) if (!(x2 < o.x1 - 2 || x1 > o.x2 + 2 || y2 < o.y1 - 2 || y1 > o.y2 + 2)) pen += 1200;
+            if (pen < bestPen) { bestPen = pen; best = { x1, x2, y1, y2, cx: p.cx, cy: p.cy, pw, ph, text: p.label, col: p.col }; }
+            if (pen < 12) break;
+          }
+          if (best) { placed.push(best); map.set(p.id, best); }
+        }
+        return map;
+      }
+
+      function renderNeuralPareto() {
+        const svg = document.getElementById("a-pareto-svg");
+        const tip = document.getElementById("a-pareto-tip");
+        const W = 1000, H = 430, pad = { l: 64, r: 28, t: 36, b: 52 };
+        const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+
+        const neural = A_DATA.filter((d) => d.camp !== "bili_js");
+        const minLog = Math.log10(4.5), maxLog = Math.log10(1500);
+        const xOf = (mb) => pad.l + ((Math.log10(Math.max(4.5, mb)) - minLog) / (maxLog - minLog)) * pw;
+        const yOf = (v) => pad.t + (1 - Math.min(1.0, Math.max(0, v))) * ph;
+
+        const parts = [`
+          <defs>
+            <linearGradient id="a-np-sweet" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="var(--success)" stop-opacity="0.14"/>
+              <stop offset="100%" stop-color="var(--primary)" stop-opacity="0.02"/>
+            </linearGradient>
+            <pattern id="a-np-hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <line x1="0" y1="0" x2="0" y2="10" stroke="var(--error)" stroke-width="1.2" stroke-opacity="0.20"/>
+            </pattern>
+          </defs>
+        `];
+
+        const sx1 = xOf(5), sx2 = xOf(75);
+        parts.push(`<rect x="${sx1.toFixed(1)}" y="${pad.t}" width="${(sx2 - sx1).toFixed(1)}" height="${(yOf(0.76) - pad.t).toFixed(1)}" rx="12" fill="url(#a-np-sweet)" stroke="var(--success)" stroke-opacity="0.4" stroke-dasharray="5 4"/>`);
+        parts.push(`<text x="${(sx1 + 8).toFixed(1)}" y="${pad.t - 10}" fill="var(--success)" font-size="11.5" font-weight="800">端侧轻量区间（7–49 MB 纯 CPU）</text>`);
+
+        const gx1 = xOf(260), gx2 = xOf(1350);
+        parts.push(`<rect x="${gx1.toFixed(1)}" y="${yOf(0.54).toFixed(1)}" width="${(gx2 - gx1).toFixed(1)}" height="${(H - pad.b - yOf(0.54)).toFixed(1)}" rx="10" fill="url(#a-np-hatch)" stroke="var(--error)" stroke-opacity="0.42" stroke-dasharray="5 4"/>`);
+        parts.push(`<text x="${((gx1 + gx2) / 2).toFixed(1)}" y="${(yOf(0.54) - 8).toFixed(1)}" fill="var(--error)" font-size="11.5" font-weight="800" text-anchor="middle">通用检测模型与 0.5B–0.6B 零样本区间（380 MB – 1.06 GB）</text>`);
+
+        for (let i = 0; i <= 5; i++) {
+          const v = i * 0.2, y = yOf(v);
+          parts.push(`<line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${W - pad.r}" y2="${y.toFixed(1)}" stroke="var(--border)" stroke-width="0.9" stroke-dasharray="${i === 0 ? "" : "3 3"}"/>`);
+          parts.push(`<text x="${pad.l - 10}" y="${(y + 4).toFixed(1)}" fill="var(--muted-foreground)" font-size="11" text-anchor="end" font-family="monospace">${aY === "r95" ? (v * 100).toFixed(0) + "%" : v.toFixed(2)}</text>`);
+        }
+        [7, 17, 50, 100, 200, 400, 1000].forEach((mb) => {
+          const x = xOf(mb);
+          parts.push(`<line x1="${x.toFixed(1)}" y1="${pad.t}" x2="${x.toFixed(1)}" y2="${H - pad.b}" stroke="var(--border)" stroke-width="0.9" stroke-dasharray="3 3" opacity="0.6"/>`);
+          parts.push(`<text x="${x.toFixed(1)}" y="${H - pad.b + 18}" fill="var(--muted-foreground)" font-size="11" text-anchor="middle" font-family="monospace">${mb >= 1000 ? "1GB" : mb + "MB"}</text>`);
+        });
+        parts.push(`<text x="${(pad.l + pw / 2).toFixed(1)}" y="${H - 10}" fill="var(--muted-foreground)" font-size="12" text-anchor="middle">模型体积（对数刻度 MB · 越靠左越轻量）</text>`);
+        parts.push(`<text x="18" y="${(pad.t + ph / 2).toFixed(1)}" fill="var(--muted-foreground)" font-size="12" font-weight="600" text-anchor="middle" transform="rotate(-90, 18, ${(pad.t + ph / 2).toFixed(1)})">${A_METRIC_INFO[aY].tag.split("·")[0].trim()} (越高越好)</text>`);
+
+        for (const [tr, col, dash] of [["fusion", "var(--success)", ""], ["text", "var(--primary)", "6 4"]]) {
+          const curve = neural.filter((d) => d.camp === "ours" && d.track === tr).sort((a, b) => a.size - b.size);
+          const dStr = curve.map((p, i) => `${i === 0 ? "M" : "L"} ${xOf(p.size).toFixed(1)} ${yOf(p[aExam][aY]).toFixed(1)}`).join(" ");
+          parts.push(`<path d="${dStr}" fill="none" stroke="${col}" stroke-width="2.4" stroke-opacity="0.82" ${dash ? `stroke-dasharray="${dash}"` : ""}/>`);
+        }
+
+        const showLbl = aY === "r95"
+          ? new Set(["oj_pro_fus", "oj_pro_txt", "oj_std_txt", "oj_lite_txt", "frozen_bge_centroid", "frozen_bge_k3", "bibbbu_xlmr_multi"])
+          : new Set(["oj_pro_fus", "oj_pro_txt", "oj_std_txt", "oj_lite_txt", "frozen_bge_centroid", "frozen_bge_k3", "anxforever_bert_zh", "yuchuantian_zhv3", "hc3_roberta_zh", "bibbbu_xlmr_multi", "qwen3_06b_zeroshot", "qwen25_05b_zeroshot"]);
+
+        const pts = neural.map((d) => {
+          const val = d[aExam][aY];
+          const col = d.camp === "ours" ? (d.track === "fusion" ? "var(--success)" : "var(--primary)") : (d.camp === "mobile_llm" ? "var(--error)" : "var(--warning)");
+          return { ...d, cx: xOf(d.size), cy: yOf(val), col, val, label: showLbl.has(d.id) ? `${d.short} (${fmtVal(val, aY)})` : "", prio: d.camp === "ours" ? 10 : (d.id === "bibbbu_xlmr_multi" ? 9 : (d.camp === "mobile_llm" ? 8 : 6)) };
+        });
+        const byId = Object.fromEntries(pts.map((p) => [p.id, p]));
+        const obs = [{ x1: gx1 - 10, x2: gx2 + 10, y1: yOf(0.54) - 24, y2: yOf(0.54) + 2 }];
+        if (aY === "r95") {
+          const q25Val = byId["qwen25_05b_zeroshot"] ? pct(byId["qwen25_05b_zeroshot"].val) : "0.3%";
+          const cX = xOf(405), cY = yOf(0.16);
+          const summaryText = `8 款 HF 390M–475M 模型与 Qwen3 均为 0.0% · Qwen2.5 为 ${q25Val}（悬停查看明细）`;
+          const sw = estW(summaryText) + 18, sh = 24;
+          const sx = Math.min(W - pad.r - sw - 6, Math.max(gx1 - 90, cX - sw / 2));
+          parts.push(`<line x1="${cX.toFixed(1)}" y1="${yOf(0).toFixed(1)}" x2="${(sx + sw / 2).toFixed(1)}" y2="${(cY + sh / 2).toFixed(1)}" stroke="var(--error)" stroke-width="1.2" stroke-dasharray="3 2" opacity="0.75"/>`);
+          parts.push(`<rect x="${sx.toFixed(1)}" y="${(cY - sh / 2).toFixed(1)}" width="${sw.toFixed(1)}" height="${sh}" rx="6" fill="var(--card)" fill-opacity="0.96" stroke="var(--error)" stroke-width="1.2" stroke-opacity="0.7"/>`);
+          parts.push(`<text x="${(sx + sw / 2).toFixed(1)}" y="${(cY + 4).toFixed(1)}" fill="var(--error)" font-size="10.8" font-weight="700" text-anchor="middle">${summaryText}</text>`);
+          obs.push({ x1: sx - 4, x2: sx + sw + 4, y1: cY - sh / 2 - 4, y2: cY + sh / 2 + 4 });
+        }
+        const pills = placePills(pts, W, H, pad, obs);
+
+        pts.forEach((p) => {
+          if (p.camp === "ours" && p.track === "fusion") {
+            parts.push(`<circle class="svg-pt" data-id="${p.id}" cx="${p.cx.toFixed(1)}" cy="${p.cy.toFixed(1)}" r="6.8" fill="${p.col}" stroke="var(--card)" stroke-width="1.6"/>`);
+          } else if (p.camp === "ours") {
+            const s = 7.4;
+            parts.push(`<polygon class="svg-pt" data-id="${p.id}" points="${p.cx.toFixed(1)},${(p.cy - s).toFixed(1)} ${(p.cx + s).toFixed(1)},${p.cy.toFixed(1)} ${p.cx.toFixed(1)},${(p.cy + s).toFixed(1)} ${(p.cx - s).toFixed(1)},${p.cy.toFixed(1)}" fill="${p.col}" stroke="var(--card)" stroke-width="1.6"/>`);
+          } else if (p.camp === "mobile_llm") {
+            const s = 7.2;
+            parts.push(`<polygon class="svg-pt" data-id="${p.id}" points="${p.cx.toFixed(1)},${(p.cy - s).toFixed(1)} ${(p.cx + s).toFixed(1)},${(p.cy + s * 0.85).toFixed(1)} ${(p.cx - s).toFixed(1)},${(p.cy + s * 0.85).toFixed(1)}" fill="${p.col}" stroke="var(--card)" stroke-width="1.5"/>`);
+          } else {
+            const s = 5.4;
+            parts.push(`<rect class="svg-pt" data-id="${p.id}" x="${(p.cx - s).toFixed(1)}" y="${(p.cy - s).toFixed(1)}" width="${(s * 2).toFixed(1)}" height="${(s * 2).toFixed(1)}" rx="2" fill="${p.col}" stroke="var(--card)" stroke-width="1.4"/>`);
+          }
+        });
+
+        pills.forEach((b, id) => {
+          const edgeX = b.cx < b.x1 ? b.x1 : (b.cx > b.x2 ? b.x2 : b.cx);
+          const edgeY = b.cy < b.y1 ? b.y1 : (b.cy > b.y2 ? b.y2 : b.cy);
+          if (Math.hypot(edgeX - b.cx, edgeY - b.cy) > 8) {
+            parts.push(`<line x1="${b.cx.toFixed(1)}" y1="${b.cy.toFixed(1)}" x2="${edgeX.toFixed(1)}" y2="${edgeY.toFixed(1)}" stroke="${b.col}" stroke-width="1" stroke-opacity="0.55"/>`);
+          }
+          parts.push(`
+            <g class="svg-lbl" data-id="${id}">
+              <rect x="${b.x1.toFixed(1)}" y="${b.y1.toFixed(1)}" width="${b.pw.toFixed(1)}" height="${b.ph}" rx="5" fill="var(--card)" fill-opacity="0.94" stroke="${b.col}" stroke-width="1" stroke-opacity="0.5"/>
+              <text x="${(b.x1 + b.pw / 2).toFixed(1)}" y="${(b.y1 + b.ph / 2 + 3.6).toFixed(1)}" fill="${b.col}" font-size="10.5" font-weight="700" text-anchor="middle">${b.text}</text>
+            </g>
+          `);
+        });
+
+        svg.innerHTML = parts.join("");
+        svg.querySelectorAll(".svg-pt, .svg-lbl").forEach((el) => {
+          el.addEventListener("mouseenter", (e) => {
+            const d = byId[el.dataset.id];
+            if (!d) return;
+            const m = d[aExam];
+            tip.innerHTML = `
+              <div class="fw-b c-fg">${d.name}</div>
+              <div class="muted" style="font-size:11px;">${d.note} · 体积 ${d.size} MB</div>
+              <div class="tip-grid">
+                <span>Best F0.5: <strong class="c-fg">${m.f05.toFixed(4)}</strong></span>
+                <span>PR-AUC: <strong class="c-fg">${m.pr_auc.toFixed(4)}</strong></span>
+                <span>R@P95%: <strong class="c-suc">${pct(m.r95)}</strong></span>
+                <span>R@P99%: <strong class="c-fg">${pct(m.r99)}</strong></span>
+              </div>
+            `;
+            const box = svg.parentElement.getBoundingClientRect();
+            const ex = e.clientX - box.left, ey = e.clientY - box.top;
+            tip.style.left = (ex + 16 + 285 > box.width ? Math.max(8, ex - 290) : ex + 16) + "px";
+            tip.style.top = (ey + 125 > box.height ? Math.max(8, ey - 120) : Math.max(8, ey - 10)) + "px";
+            tip.style.opacity = "1";
+          });
+          el.addEventListener("mouseleave", () => { tip.style.opacity = "0"; });
+        });
+      }
+
+      function renderBattlefield() {
+        const svg = document.getElementById("a-battle-svg");
+        const tip = document.getElementById("a-battle-tip");
+        const W = 1000, H = 430, pad = { l: 64, r: 28, t: 36, b: 52 };
+        const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+        const xMax = aBfMode === "def" ? 0.14 : 0.44;
+        const xOf = (fpr) => pad.l + (Math.min(xMax, Math.max(0, fpr)) / xMax) * pw;
+        const yOf = (rec) => pad.t + (1 - Math.min(1.0, Math.max(0, rec))) * ph;
+
+        const allPts = [
+          { id:"bf_pro_fus", name:"OjinjinNet-Pro v1.1 (+融合)", label:"Pro v1.1 融合 (94.4%)", fpr:0.0227, rec:0.9437, prec:0.9525, allRec:0.9710, tp:301, fp:15, kind:"ours", col:"var(--success)", prio:10 },
+          { id:"bf_pro_txt", name:"OjinjinNet-Pro v1.1 (纯文本)", label:"Pro v1.1 纯文本 (91.9%)", fpr:0.0211, rec:0.9187, prec:0.9508, allRec:0.9355, tp:290, fp:15, kind:"ours", col:"var(--primary)", prio:9 },
+          { id:"bf_std_fus", name:"OjinjinNet-Std v1.1 (+融合)", label:"", fpr:0.0227, rec:0.9187, prec:0.9519, allRec:0.9581, tp:297, fp:15, kind:"ours", col:"var(--success)", prio:5 },
+          { id:"bf_lite_txt", name:"OjinjinNet-Lite v1.1 (7MB纯文本)", label:"Lite 7MB 纯文本 (84.4%)", fpr:0.0162, rec:0.8438, prec:0.9504, allRec:0.8645, tp:268, fp:14, kind:"ours", col:"var(--primary)", prio:8 },
+
+          { id:"bf_d_def", name:"社区规则插件 D [默认≥70]", label:"插件 D 默认 (19.4%)", fpr:0.0113, rec:0.1938, prec:0.9583, allRec:0.5194, tp:161, fp:7, kind:"def", col:"var(--warning)", prio:7 },
+          { id:"bf_a_def", name:"社区规则插件 A [默认≥60]", label:"插件 A 默认档 (1.2%)", fpr:0.0227, rec:0.0125, prec:0.9136, allRec:0.4774, tp:148, fp:14, kind:"def", col:"var(--warning)", prio:8 },
+          { id:"bf_a_str", name:"社区规则插件 A [疑似≥35]", label:"插件 A 疑似档 (52.5% / 误杀10.5%)", fpr:0.1053, rec:0.5250, prec:0.7826, allRec:0.7548, tp:234, fp:65, kind:"str", col:"var(--error)", prio:8, from:"bf_a_def" },
+          { id:"bf_c_def", name:"社区规则插件 C [默认≥60]", label:"插件 C 默认 (18.8%)", fpr:0.0243, rec:0.1875, prec:0.9219, allRec:0.5710, tp:177, fp:15, kind:"def", col:"var(--warning)", prio:6 },
+          { id:"bf_c_str", name:"社区规则插件 C [疑似≥35]", label:"插件 C 疑似 (55.6% / 误杀11.2%)", fpr:0.1118, rec:0.5563, prec:0.7760, allRec:0.7710, tp:239, fp:69, kind:"str", col:"var(--error)", prio:6, from:"bf_c_def" },
+          { id:"bf_e_def", name:"社区规则插件 E [默认≥4.5]", label:"插件 E (11.2%)", fpr:0.0016, rec:0.1125, prec:0.9905, allRec:0.3355, tp:104, fp:1, kind:"def", col:"var(--warning)", prio:5 },
+          { id:"bf_f_def", name:"社区规则插件 F [隐藏档]", label:"", fpr:0.0016, rec:0.0375, prec:0.9796, allRec:0.1548, tp:48, fp:1, kind:"def", col:"var(--warning)", prio:3 },
+          { id:"bf_f_str", name:"社区规则插件 F [疑似档]", label:"插件 F 疑似 (31.2%)", fpr:0.0292, rec:0.3125, prec:0.9048, allRec:0.5516, tp:171, fp:18, kind:"str", col:"var(--warning)", prio:5 },
+          { id:"bf_i_def", name:"社区规则插件 I [标准≥55]", label:"插件 I 标准 (30.6% / 误杀7.3%)", fpr:0.0729, rec:0.3063, prec:0.7571, allRec:0.5129, tp:159, fp:51, kind:"def", col:"var(--warning)", prio:6 },
+          { id:"bf_g_def", name:"社区规则插件 G [四特征默认]", label:"插件 G (53.8% / 误杀5.4%)", fpr:0.0535, rec:0.5375, prec:0.8471, allRec:0.6968, tp:216, fp:39, kind:"def", col:"var(--warning)", prio:6 },
+          { id:"bf_h_def", name:"社区规则插件 H [屏蔽 Lv&lt;3 + 关键词]", label:"插件 H Lv&lt;3 (88.1% / 误杀17.8%)", fpr:0.1783, rec:0.8812, prec:0.6636, allRec:0.9355, tp:290, fp:147, kind:"str", col:"var(--error)", prio:9 },
+          { id:"bf_j_str", name:"社区规则插件 J [去@门槛≥6]", label:"插件 J 去@档 (56.2% / 误杀11.8%)", fpr:0.1183, rec:0.5625, prec:0.7192, allRec:0.6032, tp:187, fp:73, kind:"str", col:"var(--error)", prio:5 },
+          { id:"bf_b_t1", name:"社区规则插件 B [轻量档]", label:"插件 B 轻量 (31.9% / 误杀10.1%)", fpr:0.1005, rec:0.3187, prec:0.6800, allRec:0.5484, tp:170, fp:80, kind:"def", col:"var(--warning)", prio:7 },
+          { id:"bf_b_t2", name:"社区规则插件 B [标准档]", label:"插件 B 标准档 (35.6% / 误杀32.9%)", fpr:0.3290, rec:0.3563, prec:0.4022, allRec:0.5839, tp:181, fp:269, kind:"str", col:"var(--error)", prio:8, from:"bf_b_t1" },
+          { id:"bf_b_t3", name:"社区规则插件 B [激进档]", label:"插件 B 激进档 (71.9% / 误杀39.9%)", fpr:0.3987, rec:0.7188, prec:0.4397, allRec:0.8355, tp:259, fp:330, kind:"str", col:"var(--error)", prio:10, from:"bf_b_t2" },
+        ];
+
+        const pts = allPts
+          .filter((p) => p.kind === "ours" || aBfMode === "all" || p.kind === aBfMode)
+          .map((p) => ({ ...p, cx: xOf(p.fpr), cy: yOf(p.rec) }));
+
+        const byId = Object.fromEntries(pts.map((p) => [p.id, p]));
+        const parts = [`
+          <defs>
+            <marker id="a-bf-arr" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 1 1.5 L 8.5 5 L 1 8.5 z" fill="var(--error)"/>
+            </marker>
+            <linearGradient id="a-god-zone" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="var(--success)" stop-opacity="0.16"/>
+              <stop offset="100%" stop-color="var(--primary)" stop-opacity="0.02"/>
+            </linearGradient>
+            <pattern id="a-kill-hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <line x1="0" y1="0" x2="0" y2="10" stroke="var(--error)" stroke-width="1.2" stroke-opacity="0.20"/>
+            </pattern>
+          </defs>
+        `];
+
+        const gzW = xOf(aBfMode === "def" ? 0.032 : 0.055) - pad.l, gzH = yOf(0.76) - pad.t;
+        parts.push(`<rect x="${pad.l}" y="${pad.t}" width="${gzW.toFixed(1)}" height="${gzH.toFixed(1)}" rx="10" fill="url(#a-god-zone)" stroke="var(--success)" stroke-opacity="0.45" stroke-dasharray="5 4"/>`);
+        parts.push(`<text x="${pad.l + 8}" y="${pad.t - 10}" fill="var(--success)" font-size="11.5" font-weight="800">高召回低误杀区间（隐蔽 AI &gt;84% 且难负误杀 &lt;2.3%）</text>`);
+
+        const obs = [];
+        if (aBfMode !== "def") {
+          const mzX = xOf(0.15);
+          parts.push(`<rect x="${mzX.toFixed(1)}" y="${pad.t}" width="${(W - pad.r - mzX).toFixed(1)}" height="${ph}" rx="8" fill="url(#a-kill-hatch)" stroke="var(--error)" stroke-opacity="0.40" stroke-dasharray="5 4"/>`);
+          parts.push(`<text x="${((mzX + W - pad.r) / 2).toFixed(1)}" y="${pad.t + 22}" fill="var(--error)" font-size="11.5" font-weight="800" text-anchor="middle">高误杀区间（难负真人误杀率 15% – 40%）</text>`);
+          obs.push({ x1: mzX + 40, x2: W - pad.r - 40, y1: pad.t + 6, y2: pad.t + 30 });
+        }
+
+        for (let i = 0; i <= 5; i++) {
+          const v = i * 0.2, y = yOf(v);
+          parts.push(`<line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${W - pad.r}" y2="${y.toFixed(1)}" stroke="var(--border)" stroke-width="0.9" stroke-dasharray="${i === 0 ? "" : "3 3"}"/>`);
+          parts.push(`<text x="${pad.l - 10}" y="${(y + 4).toFixed(1)}" fill="var(--muted-foreground)" font-size="11" text-anchor="end" font-family="monospace">${(v * 100).toFixed(0)}%</text>`);
+        }
+        const xTicks = aBfMode === "def" ? [0, 0.02, 0.04, 0.06, 0.08, 0.10, 0.12] : [0, 0.02, 0.05, 0.10, 0.15, 0.20, 0.30, 0.40];
+        xTicks.forEach((fpr) => {
+          const x = xOf(fpr);
+          parts.push(`<line x1="${x.toFixed(1)}" y1="${pad.t}" x2="${x.toFixed(1)}" y2="${H - pad.b}" stroke="var(--border)" stroke-width="0.9" stroke-dasharray="3 3" opacity="0.6"/>`);
+          parts.push(`<text x="${x.toFixed(1)}" y="${H - pad.b + 18}" fill="var(--muted-foreground)" font-size="11" text-anchor="middle" font-family="monospace">${(fpr * 100).toFixed(0)}%</text>`);
+        });
+        parts.push(`<text x="${(pad.l + pw / 2).toFixed(1)}" y="${H - 10}" fill="var(--muted-foreground)" font-size="12" text-anchor="middle">难负真人误杀率 Hard Human FPR（越靠左越安全）</text>`);
+        parts.push(`<text x="18" y="${(pad.t + ph / 2).toFixed(1)}" fill="var(--muted-foreground)" font-size="12" font-weight="600" text-anchor="middle" transform="rotate(-90, 18, ${(pad.t + ph / 2).toFixed(1)})">隐蔽 AI 召回率 Stealth Recall (越高越好)</text>`);
+
+        if (aBfMode === "all") {
+          pts.filter((p) => p.from && byId[p.from]).forEach((p) => {
+            const a = byId[p.from];
+            parts.push(`<line x1="${a.cx.toFixed(1)}" y1="${a.cy.toFixed(1)}" x2="${p.cx.toFixed(1)}" y2="${p.cy.toFixed(1)}" stroke="var(--error)" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.7" marker-end="url(#a-bf-arr)"/>`);
+          });
+        }
+
+        const pills = placePills(pts, W, H, pad, obs);
+
+        pts.forEach((p) => {
+          if (p.kind === "ours") {
+            parts.push(`<circle cx="${p.cx.toFixed(1)}" cy="${p.cy.toFixed(1)}" r="11" fill="${p.col}" fill-opacity="0.18"/>`);
+            parts.push(`<circle class="svg-pt" data-id="${p.id}" cx="${p.cx.toFixed(1)}" cy="${p.cy.toFixed(1)}" r="6.8" fill="${p.col}" stroke="var(--card)" stroke-width="1.8"/>`);
+          } else if (p.kind === "str") {
+            const s = 6.8;
+            parts.push(`<polygon class="svg-pt" data-id="${p.id}" points="${p.cx.toFixed(1)},${(p.cy - s).toFixed(1)} ${(p.cx + s).toFixed(1)},${(p.cy + s * 0.85).toFixed(1)} ${(p.cx - s).toFixed(1)},${(p.cy + s * 0.85).toFixed(1)}" fill="${p.col}" stroke="var(--card)" stroke-width="1.4"/>`);
+          } else {
+            const s = 5.4;
+            parts.push(`<rect class="svg-pt" data-id="${p.id}" x="${(p.cx - s).toFixed(1)}" y="${(p.cy - s).toFixed(1)}" width="${(s * 2).toFixed(1)}" height="${(s * 2).toFixed(1)}" rx="2" fill="${p.col}" stroke="var(--card)" stroke-width="1.4"/>`);
+          }
+        });
+
+        pills.forEach((b, id) => {
+          const edgeX = b.cx < b.x1 ? b.x1 : (b.cx > b.x2 ? b.x2 : b.cx);
+          const edgeY = b.cy < b.y1 ? b.y1 : (b.cy > b.y2 ? b.y2 : b.cy);
+          if (Math.hypot(edgeX - b.cx, edgeY - b.cy) > 8) {
+            parts.push(`<line x1="${b.cx.toFixed(1)}" y1="${b.cy.toFixed(1)}" x2="${edgeX.toFixed(1)}" y2="${edgeY.toFixed(1)}" stroke="${b.col}" stroke-width="1" stroke-opacity="0.55"/>`);
+          }
+          parts.push(`
+            <g class="svg-lbl" data-id="${id}">
+              <rect x="${b.x1.toFixed(1)}" y="${b.y1.toFixed(1)}" width="${b.pw.toFixed(1)}" height="${b.ph}" rx="5" fill="var(--card)" fill-opacity="0.94" stroke="${b.col}" stroke-width="1" stroke-opacity="0.5"/>
+              <text x="${(b.x1 + b.pw / 2).toFixed(1)}" y="${(b.y1 + b.ph / 2 + 3.6).toFixed(1)}" fill="${b.col}" font-size="10.5" font-weight="700" text-anchor="middle">${b.text}</text>
+            </g>
+          `);
+        });
+
+        svg.innerHTML = parts.join("");
+        svg.querySelectorAll(".svg-pt, .svg-lbl").forEach((el) => {
+          el.addEventListener("mouseenter", (e) => {
+            const p = byId[el.dataset.id];
+            if (!p) return;
+            tip.innerHTML = `
+              <div class="fw-b c-fg">${p.name}</div>
+              <div class="tip-grid">
+                <span>隐蔽 AI 召回: <strong class="c-suc">${pct(p.rec)}</strong></span>
+                <span>难负真人误杀: <strong class="c-err">${pct(p.fpr, 2)}</strong></span>
+                <span>精确率 Prec: <strong class="c-fg">${pct(p.prec)}</strong></span>
+                <span>总召回 Rec: <strong class="c-fg">${pct(p.allRec)}</strong></span>
+                <span>命中 AI: <strong class="c-fg">${p.tp} / 310</strong></span>
+                <span>误判真人: <strong class="c-err">${p.fp} / 1000</strong></span>
+              </div>
+            `;
+            const box = svg.parentElement.getBoundingClientRect();
+            const ex = e.clientX - box.left, ey = e.clientY - box.top;
+            tip.style.left = (ex + 16 + 280 > box.width ? Math.max(8, ex - 285) : ex + 16) + "px";
+            tip.style.top = (ey + 130 > box.height ? Math.max(8, ey - 125) : Math.max(8, ey - 10)) + "px";
+            tip.style.opacity = "1";
+          });
+          el.addEventListener("mouseleave", () => { tip.style.opacity = "0"; });
+        });
+      }
+
+      function renderArenaTable() {
+        const filtered = A_DATA.filter((d) => {
+          if (aCamp === "bili_js") return d.camp === "ours" || d.camp === "bili_js";
+          if (aCamp === "neural") return d.camp === "ours" || d.camp === "hf_neural" || d.camp === "mobile_llm";
+          if (aCamp === "text_only") return d.track === "text";
+          return true;
+        }).sort((a, b) => {
+          const va = aSort === "size" ? a.size : a[aExam][aSort];
+          const vb = aSort === "size" ? b.size : b[aExam][aSort];
+          return aAsc ? va - vb : vb - va;
+        });
+
+        document.getElementById("a-row-count").textContent = `当前显示 ${filtered.length} / ${A_DATA.length} 组`;
+        const badges = {
+          ours: `<span class="camp-badge camp-ours">OjinjinNet</span>`,
+          bili_js: `<span class="camp-badge camp-rule">社区规则</span>`,
+          hf_neural: `<span class="camp-badge camp-hf">开源模型</span>`,
+          mobile_llm: `<span class="camp-badge camp-llm">端侧LLM</span>`,
+        };
+
+        document.getElementById("a-master-tbody").innerHTML = filtered.map((d, i) => {
+          const m = d[aExam];
+          let ootbTxt = `<span class="muted">${d.note}</span>`;
+          if (d.camp === "ours" && aExam === "full") {
+            ootbTxt = `<span class="c-suc">P95 隐蔽 ${pct(m.stealth95)} · 误杀 ${pct(m.hard_fpr95, 2)} (${m.caught95}中/${m.fp95}误)</span>`;
+          } else if (d.ootb && d.ootb.default_pred) {
+            const o = d.ootb.default_pred;
+            const fprCls = o.hard_fpr >= 0.10 ? "c-err fw-b" : "muted";
+            ootbTxt = `精 ${pct(o.prec)} · 召 ${pct(o.rec)} · 隐蔽 ${pct(o.stealth_rec)} · <span class="${fprCls}">误杀 ${pct(o.hard_fpr, 2)}</span> (${o.tp}/${o.fp})`;
+          }
+          return `
+            <tr class="${d.camp === "ours" ? "sel" : ""}">
+              <td class="fw-b ${i < 6 && d.camp === "ours" ? "c-pri" : "muted"}">${i + 1}</td>
+              <td><span class="name-flex">${badges[d.camp]}<strong class="c-fg">${d.name}</strong></span></td>
+              <td class="fw-b ${m.f05 >= 0.90 ? "c-suc" : ""}">${m.f05.toFixed(4)}</td>
+              <td>${m.pr_auc.toFixed(4)}</td>
+              <td class="fw-b ${m.r95 >= 0.80 ? "c-suc" : (m.r95 === 0 ? "c-err" : "")}">${pct(m.r95)}</td>
+              <td>${pct(m.r99)}</td>
+              <td style="text-align:left;font-size:11px;">${ootbTxt}</td>
+              <td>${d.size < 1 ? "规则" : (d.size >= 1000 ? (d.size / 1024).toFixed(2) + "GB" : d.size.toFixed(1) + "M")}</td>
+            </tr>
+          `;
+        }).join("");
+      }
+
+      function renderArenaAll() {
+        setBtn(".a-exam-btn", "aexam", aExam);
+        setBtn(".a-camp-btn", "acamp", aCamp);
+        setBtn(".a-y-btn", "ay", aY);
+        setBtn(".a-bf-btn", "bfmode", aBfMode);
+        document.getElementById("a-exam-desc").textContent = aExam === "full"
+          ? "当前评估集：1,310 条完整集（150 显性 AI + 160 隐蔽 AI + 617 高难真人 + 383 普通真人）"
+          : "当前评估集：777 条 Hard-Only 高难子集（160 条规则零分隐蔽 AI + 617 条高难真人长评）";
+        document.getElementById("a-pareto-note").textContent = aExam === "full"
+          ? "当前展示完整集 (1,310 条) 指标 · 悬停查看详情"
+          : "当前展示 Hard-Only 子集 (777 条) 指标 · 悬停查看详情";
+        renderNeuralPareto();
+        renderBattlefield();
+        renderArenaTable();
+      }
+
+      document.querySelectorAll(".a-exam-btn").forEach((b) => b.addEventListener("click", () => { aExam = b.dataset.aexam; renderArenaAll(); }));
+      document.querySelectorAll(".a-camp-btn").forEach((b) => b.addEventListener("click", () => { aCamp = b.dataset.acamp; renderArenaAll(); }));
+      document.querySelectorAll(".a-y-btn").forEach((b) => b.addEventListener("click", () => { aY = b.dataset.ay; renderArenaAll(); }));
+      document.querySelectorAll(".a-bf-btn").forEach((b) => b.addEventListener("click", () => { aBfMode = b.dataset.bfmode; renderBattlefield(); setBtn(".a-bf-btn", "bfmode", aBfMode); }));
+      document.querySelectorAll(".a-sort-th").forEach((th) => {
+        th.addEventListener("mouseenter", () => {
+          const info = A_METRIC_INFO[th.dataset.ametric];
+          if (info) {
+            document.getElementById("a-exp-badge").textContent = info.tag;
+            document.getElementById("a-exp-text").textContent = info.text;
+          }
+        });
+        if (th.dataset.asort) {
+          th.addEventListener("click", () => {
+            const k = th.dataset.asort;
+            if (aSort === k) aAsc = !aAsc;
+            else { aSort = k; aAsc = (k === "size"); }
+            renderArenaTable();
+          });
+        }
+      });
+
+      function switchTab(tab, updateHash = true) {
+        const isArena = tab === "arena";
+        document.getElementById("view-overview").style.display = isArena ? "none" : "flex";
+        document.getElementById("view-arena").style.display = isArena ? "flex" : "none";
+        setBtn(".nav-tab", "tab", isArena ? "arena" : "overview");
+        if (updateHash && history.replaceState) {
+          history.replaceState(null, "", isArena ? "#arena" : "#overview");
+        }
+      }
+
+      document.querySelectorAll(".nav-tab").forEach((b) => b.addEventListener("click", () => switchTab(b.dataset.tab)));
+      window.addEventListener("hashchange", () => switchTab(location.hash === "#arena" ? "arena" : "overview", false));
+
+      renderArenaAll();
+      switchTab(location.hash === "#arena" ? "arena" : "overview", false);
+    })();
   </script>
 </body>
 </html>
