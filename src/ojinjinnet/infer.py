@@ -245,9 +245,141 @@ class OjinjinClassifier:
         return float(1.0 / (1.0 + math.exp(-max(-30.0, min(30.0, z)))))
 
 
+class OjinjinCascadeClassifier:
+    """Two-stage CPU cascade routing (~90% handled by 1.22 MB Nano, ~10% escalated to 49.5 MB Pro).
+
+    Supports two routing strategies:
+      - `l2d` (default when `model_cascade_int8.onnx` is present): uses Nano's trained FP-aware
+        Learning-to-Defer head (`defer_logits`) to route error-prone samples to the strong model.
+      - `naive`: routes samples closest to `p = 0.5` (`0.5 - |p - 0.5| >= threshold`).
+    """
+
+    def __init__(
+        self,
+        fast_model_dir: str | Path,
+        strong_model_dir: str | Path,
+        strategy: str = "l2d",
+        target_budget: int = 10,
+        defer_threshold: float | None = None,
+        num_threads: int = 4,
+    ) -> None:
+        self.fast_dir = Path(fast_model_dir)
+        self.strong = OjinjinClassifier(strong_model_dir, num_threads=num_threads)
+        self.fast = OjinjinClassifier(self.fast_dir, num_threads=num_threads)
+
+        manifest_path = self.fast_dir / "manifest.json"
+        self.manifest: dict[str, Any] = (
+            json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.is_file() else {}
+        )
+        cascade_onnx = self.fast_dir / str(self.manifest.get("cascade_model", "model_cascade_int8.onnx"))
+        self.has_l2d_head = cascade_onnx.is_file()
+
+        if strategy not in ("l2d", "naive"):
+            raise ValueError(f"Unsupported cascade strategy: {strategy!r} (expected 'l2d' or 'naive')")
+        self.strategy = "l2d" if (strategy == "l2d" and self.has_l2d_head) else "naive"
+
+        self.cascade_session: ort.InferenceSession | None = None
+        if self.strategy == "l2d":
+            opts = ort.SessionOptions()
+            opts.intra_op_num_threads = num_threads
+            opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+            self.cascade_session = ort.InferenceSession(
+                str(cascade_onnx), sess_options=opts, providers=["CPUExecutionProvider"]
+            )
+
+        if defer_threshold is not None:
+            self.defer_threshold = float(defer_threshold)
+        else:
+            thrs = self.manifest.get("cascade_thresholds") or {}
+            key = "l2d_fp" if self.strategy == "l2d" else "naive"
+            bucket_map = thrs.get(key) or {}
+            bkey = str(int(target_budget))
+            if bkey in bucket_map:
+                self.defer_threshold = float(bucket_map[bkey])
+            else:
+                self.defer_threshold = 0.25 if self.strategy == "l2d" else 0.12
+
+    def _run_fast_both(self, texts: list[str], batch_size: int = 32) -> tuple[np.ndarray, np.ndarray]:
+        if self.cascade_session is None:
+            logits = self.fast.predict_logits(texts, batch_size=batch_size, bucketed=True)
+            probs = 1.0 / (1.0 + np.exp(-np.clip(logits, -30.0, 30.0)))
+            return logits, (0.5 - np.abs(probs - 0.5)).astype(np.float32)
+
+        seqs = [self.fast.tokenizer.encode(t, max_len=self.fast.max_len, head_len=self.fast.head_len) for t in texts]
+        pad_id = self.fast.tokenizer.pad_id
+        n = len(seqs)
+        out_z = np.empty((n,), dtype=np.float32)
+        out_d = np.empty((n,), dtype=np.float32)
+        buckets: dict[int, list[int]] = {}
+        for idx, seq in enumerate(seqs):
+            l = len(seq)
+            key = 32 if l <= 32 else (64 if l <= 64 else (128 if l <= 128 else self.fast.max_len))
+            buckets.setdefault(key, []).append(idx)
+        for key in sorted(buckets):
+            idxs = buckets[key]
+            for i in range(0, len(idxs), batch_size):
+                sub = idxs[i : i + batch_size]
+                sub_seqs = [seqs[k] for k in sub]
+                ml = max(len(s) for s in sub_seqs)
+                ids = np.full((len(sub), ml), pad_id, dtype=np.int64)
+                mask = np.zeros((len(sub), ml), dtype=np.int64)
+                for j, s in enumerate(sub_seqs):
+                    ids[j, : len(s)] = s
+                    mask[j, : len(s)] = 1
+                z, d = self.cascade_session.run(None, {"input_ids": ids, "attention_mask": mask})
+                z_flat = z.reshape(-1).astype(np.float32)
+                d_flat = d.reshape(-1).astype(np.float32)
+                d_prob = 1.0 / (1.0 + np.exp(-np.clip(d_flat, -30.0, 30.0)))
+                for k, zv, dv in zip(sub, z_flat, d_prob):
+                    out_z[k] = zv
+                    out_d[k] = dv
+        return out_z, out_d
+
+    def predict_detailed(
+        self,
+        texts: list[str],
+        batch_size: int = 32,
+    ) -> list[dict[str, Any]]:
+        """Return per-comment calibrated probability, escalation flag, and defer score."""
+        if not texts:
+            return []
+        fast_z, defer_scores = self._run_fast_both(texts, batch_size=batch_size)
+        fast_p = 1.0 / (1.0 + np.exp(-np.clip(fast_z, -30.0, 30.0)))
+        escalate_idxs = [i for i, d in enumerate(defer_scores) if float(d) >= self.defer_threshold]
+
+        final_p = fast_p.astype(np.float64).copy()
+        escalated_set = set(escalate_idxs)
+        if escalate_idxs:
+            strong_probs = self.strong.predict_proba([texts[i] for i in escalate_idxs], batch_size=batch_size, bucketed=True)
+            for idx, sp in zip(escalate_idxs, strong_probs):
+                final_p[idx] = sp
+
+        return [
+            {
+                "prob": float(final_p[i]),
+                "escalated": i in escalated_set,
+                "defer_score": float(defer_scores[i]),
+                "fast_prob": float(fast_p[i]),
+            }
+            for i in range(len(texts))
+        ]
+
+    def predict_proba(self, texts: list[str], batch_size: int = 32) -> list[float]:
+        """Return calibrated AI-generated probability in [0, 1] using two-stage cascade routing."""
+        return [row["prob"] for row in self.predict_detailed(texts, batch_size=batch_size)]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run OjinjinNet ONNX INT8 inference on Chinese comments.")
     parser.add_argument("--model-dir", type=Path, required=True, help="Directory with model_int8.onnx and vocab.txt")
+    parser.add_argument(
+        "--cascade-strong-dir",
+        type=Path,
+        default=None,
+        help="Optional strong model dir (e.g. Pro) to enable two-stage Nano->Pro cascade routing",
+    )
+    parser.add_argument("--cascade-strategy", choices=["l2d", "naive"], default="l2d", help="Cascade routing strategy")
+    parser.add_argument("--cascade-budget", type=int, choices=[10, 15, 20], default=10, help="Target escalation budget (%)")
     parser.add_argument("--threads", type=int, default=4, help="CPU threads for ONNX Runtime")
     parser.add_argument("texts", nargs="*", help="Comment strings to score (or pipe lines via stdin)")
     args = parser.parse_args()
@@ -258,11 +390,24 @@ def main() -> None:
     if not texts:
         parser.error("Provide at least one comment string as argument or via stdin.")
 
-    clf = OjinjinClassifier(args.model_dir, num_threads=args.threads)
-    probs = clf.predict_proba(texts)
-    for text, p in zip(texts, probs):
-        tag = "AI" if p >= 0.5 else "Human"
-        print(f"[{tag:5s}] p={p:.4f} | {text}")
+    if args.cascade_strong_dir is not None:
+        cas = OjinjinCascadeClassifier(
+            args.model_dir,
+            args.cascade_strong_dir,
+            strategy=args.cascade_strategy,
+            target_budget=args.cascade_budget,
+            num_threads=args.threads,
+        )
+        for text, row in zip(texts, cas.predict_detailed(texts)):
+            tag = "AI" if row["prob"] >= 0.5 else "Human"
+            route = "Pro" if row["escalated"] else "Fast"
+            print(f"[{tag:5s}|{route:4s}] p={row['prob']:.4f} (fast={row['fast_prob']:.4f}, defer={row['defer_score']:.3f}) | {text}")
+    else:
+        clf = OjinjinClassifier(args.model_dir, num_threads=args.threads)
+        probs = clf.predict_proba(texts)
+        for text, p in zip(texts, probs):
+            tag = "AI" if p >= 0.5 else "Human"
+            print(f"[{tag:5s}] p={p:.4f} | {text}")
 
 
 if __name__ == "__main__":

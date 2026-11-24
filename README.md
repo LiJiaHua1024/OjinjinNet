@@ -1,18 +1,18 @@
 # OjinjinNet
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Release](https://img.shields.io/badge/Release-v1.1.0-brightgreen.svg)](../../releases)
+[![Release](https://img.shields.io/badge/Release-v1.2.0-brightgreen.svg)](../../releases)
 [![ONNX Runtime](https://img.shields.io/badge/Runtime-ONNX%20INT8-green.svg)](https://onnxruntime.ai/)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](pyproject.toml)
 
-`OjinjinNet` 是一个面向中文社区评论区的轻量级端侧 AI 评论检测模型家族。所有模型均导出为纯 CPU ONNX INT8 格式（体积 `7.05 MB – 49.49 MB`），不依赖 PyTorch 或移动端 GPU，重点解决去掉常见关键词与模板口癖后的隐蔽 AI 评论识别问题。
+`OjinjinNet` 是一个面向中文社区评论区的轻量级端侧 AI 评论检测模型家族。所有模型均导出为纯 CPU ONNX INT8 格式（体积覆盖 `1.22 MB – 49.49 MB`），不依赖 PyTorch 或移动端 GPU，重点解决去掉常见关键词与模板口癖后的隐蔽 AI 评论识别问题，并支持 `Nano → Pro` 两级级联分诊。
 
 ### 主要特性
 
-- **轻量纯 CPU 推理**：提供 `7.05 MB`（Lite）、`16.86 MB`（Standard）、`49.49 MB`（Pro）三档 ONNX INT8 模型，不占用移动端 GPU；在骁龙 865 4 核 CPU 上处理整页 20 条评论需 `56 ms / 106 ms / 314 ms`。
-- **针对隐蔽 AI 语体优化**：不只匹配表层词典或格式特征，在去掉特征词的 `Hard-Only` 高难子集（777 条）上，纯文本 `Recall@P95%` 达到 `80.0% – 89.4%`，同时将高难真人长评误杀率控制在 `1.0% – 2.3%`。
-- **极简运行时与长度分桶**：Python 推理包仅依赖 `onnxruntime` 与 `numpy`，内置纯 Python WordPiece 分词与自动长度分桶批处理（`bucketed=True`），整页推理相对定长 padding 提速约 `2.2× – 2.3×`，也便于移植至 Kotlin、Swift、Rust 或 JavaScript。
-- **支持纯文本与轻量融合两种用法**：既可以仅凭评论正文独立运行，也支持通过 1 KB 级线性融合权重结合基础账号/互动信号进一步提升召回率。
+- **四档轻量纯 CPU 推理**：提供 `1.22 MB`（Nano，零自注意力多字哈希卷积）、`7.05 MB`（Lite）、`16.86 MB`（Standard）、`49.49 MB`（Pro）四档 ONNX INT8 模型，不占用移动端 GPU；`Nano` 在 PC 4 核 CPU 上整页 20 条仅需 `3.4 ms`（弹幕吞吐约 `25,000 条/秒`）。
+- **开箱即用的 `Nano → Pro` 两级级联（`OjinjinCascadeClassifier`）**：`Nano` 内置专门训练的防误杀拒识头（L2D-FP，仅增约 `1 KB`），先以 `3.4 ms` 处理约 90% 明确评论，仅将 `7%–12%` 高风险/边界评论转交 `Pro` 复核；在晚 11 月时间外盲测卷 `OjinjinBench-v2` 上提速 `7.5× – 12.0×`（整页 `21–33 ms`），准确率持平并局部超过全量运行 `Pro`。
+- **针对隐蔽 AI 语体优化**：在 `OjinjinBench-v1`（1,310 条）与全新晚 11 月时间外盲测集 `OjinjinBench-v2`（1,476 条，隐蔽 AI 占比超过 80%）双考卷上均保持高精确率与低误杀。
+- **极简运行时与长度分桶**：Python 推理包仅依赖 `onnxruntime` 与 `numpy`，内置纯 Python WordPiece 分词、自动长度分桶批处理（`bucketed=True`）及可选 1 KB 元信息融合权重，便于移植至 Kotlin、Swift、Rust 或 JavaScript。
 
 ---
 
@@ -33,16 +33,17 @@
 
 模型权重通过 [GitHub Releases](../../releases) 分发，每档压缩包包含 `model_int8.onnx`、`vocab.txt`、`fusion_weights.json`、`manifest.json` 与 `NOTICE`，并附带 `SHA256SUMS.txt` 校验文件。
 
-| 规格 | 底座 / 量化方式 | 裁剪后参数 | INT8 体积 | 骁龙 865 (ARM64 CPU)<br>单条 / 整页 20 条分桶 | 骁龙 865 短文本吞吐<br>(`seq=16` / `seq=24`) | 适用场景 |
+| 规格 | 底座 / 量化方式 | 裁剪后参数 | INT8 体积 | PC 4 核 CPU<br>单条 / 整页 20 条分桶 | PC 4 核短文本吞吐 (`seq=16`) | 适用场景 |
 |---|---|---:|---:|---:|---:|---|
-| `OjinjinNet-Lite` | MiniRBT-h256 (6L-256H) · Dynamic INT8 | 7.03M | 7.05 MB | 4.7 ms / 56.4 ms | 1,322 / 910 条/秒 | 低端设备、浏览器环境或高吞吐短文本流 |
-| `OjinjinNet-Standard` | BGE-small-zh-v1.5 (4L-512H) · Dynamic INT8 | 17.33M | 16.86 MB | 7.1 ms / 106.4 ms | 718 / 487 条/秒 | 默认推荐，在体积、耗时与精度间较均衡 |
-| `OjinjinNet-Pro` | MacBERT-6L 剪枝蒸馏 (6L-768H) · SmoothQuant INT8 | 51.19M | 49.49 MB | 18.8 ms / 314.2 ms | ~310 条/秒 | 追求最高纯文本精度、无元信息可用场景 |
+| **`OjinjinNet-Nano`** | 多字哈希卷积 (Bigram+Trigram+DWConv) · Static QDQ INT8 | 1.21M | **1.22 MB** | **0.35 ms / 3.4 ms** | **24,959 条/秒** | 极低体积、浏览器/弹幕流、两级级联第一级 |
+| `OjinjinNet-Lite` | MiniRBT-h256 (4L-256H, 4 教师蒸馏) · Dynamic INT8 | 7.03M | 7.05 MB | 3.1 ms / 39.6 ms | 1,868 条/秒 | 单文件轻量部署、中低端移动设备 |
+| `OjinjinNet-Standard` | BGE-small-zh-v1.5 (4L-512H) · Dynamic INT8 | 17.33M | 16.86 MB | 6.1 ms / 105.9 ms | 842 条/秒 | 单文件均衡部署 |
+| `OjinjinNet-Pro` | MacBERT-6L 剪枝 (6L-768H) · SmoothQuant INT8 | 51.19M | 49.49 MB | 15.4 ms / 252.2 ms | 285 条/秒 | 追求最高纯文本与语义上限 |
+| **`Nano → Pro` 两级级联** | `Nano` (L2D-FP / Naive) + 约 `7%–12%` 转交 `Pro` | 1.21M + 51.19M | 1.22 + 49.49 MB | — / **21.0 – 33.6 ms** | — | **综合推荐**：快于单跑 Lite，效果逼近/局部反超 Pro |
 
-> **移动端实测环境**（骁龙 865 / Android 16 ARM64 / `onnxruntime-android 1.31.0` / 默认 `CPUExecutionProvider` 4 线程）：
-> - 最大序列长度 `max_len=192`（Head 140 + Tail 50）；整页 20 条分桶模拟真实评论长度分布（`12×32 + 5×64 + 3×128`），相对整批 pad 到 `128` 提速 `2.24× – 2.33×`。
-> - 冷加载耗时 `121 – 214 ms`，加载增量内存 `+41.9 / +53.9 / +83.7 MB`（含约 `34 MB` ORT 运行时）；不建议开启 XNNPACK EP（动态 INT8 矩阵乘实测反慢 `2.7× – 3.0×`）。
-> - PC 4 核 CPU（`seq_len=64`）单条 / 整页耗时：Lite `2.9 ms / 40.8 ms`，Standard `4.8 ms / 82.4 ms`，Pro `13.5 ms / 266.3 ms`。
+> **实测说明**：
+> - 统一最大序列长度 `max_len=192`（Head 140 + Tail 50），整页 20 条分桶模拟真实评论长度分布（`12×32 + 5×64 + 3×128`）。
+> - 移动端骁龙 865（Android 16 ARM64 / `onnxruntime-android 1.31.0` 4 线程）实测同架构整页分桶耗时：Lite `56.4 ms`、Standard `106.4 ms`、Pro `314.2 ms`（冷加载 `121 – 214 ms`，不建议开启 XNNPACK EP）。
 
 ---
 
@@ -63,28 +64,59 @@ uv run ojinjinnet --model-dir ./models/standard \
   "不得不说这个视角确实很独特，不是简单的情绪宣泄，而是从底层逻辑剖析了问题本质，值得深思。"
 ```
 
-4. Python API 调用（默认开启自动长度分桶 `bucketed=True`）：
+4. Python API 调用（支持单模型与 `Nano → Pro` 两级级联）：
 
 ```python
-from ojinjinnet import OjinjinClassifier
+from ojinjinnet import OjinjinCascadeClassifier, OjinjinClassifier
 
-clf = OjinjinClassifier("./models/standard", num_threads=4)
+# 单模型（如 1.22 MB Nano 或 7.05 MB Lite）
+clf = OjinjinClassifier("./models/nano", num_threads=4)
 scores = clf.predict_proba([
     "哈哈哈太真实了，笑死我了",
     "平心而论，这个观点看似犀利实则忽略了现实中的复杂博弈，让人看完颇有触动。",
 ])
-print(scores)
+
+# 两级级联（默认 L2D-FP 防误杀分诊头，约 90% 由 Nano 直接处理，~10% 转交 Pro 复核）
+cascade = OjinjinCascadeClassifier(
+    fast_model_dir="./models/nano",
+    strong_model_dir="./models/pro",
+    strategy="l2d",       # 可选 "l2d" 或 "naive"
+    target_budget=10,     # 预设转交预算：10 / 15 / 20 (%)
+)
+print(cascade.predict_detailed(["确实难绷", "怕的不是工具变强，是判断力变懒——这才是隐形成本。"]))
+```
+
+5. 命令行也可以直接开启两级级联：
+
+```bash
+uv run ojinjinnet --model-dir ./models/nano --cascade-strong-dir ./models/pro \
+  "这波属实难绷" "怕的不是工具变强，是判断力变懒——这才是隐形成本。"
 ```
 
 ---
 
-## 评测结果（OjinjinBench-v1）
+## 评测结果（OjinjinBench-v1 与 OjinjinBench-v2）
 
-评测集 `OjinjinBench-v1` 由 **1,310 条近期真实社区评论**构成（`150` 显性 AI + `160` 规则零分隐蔽 AI + `617` 高难真人长评/科普/影评 + `383` 普通真人），不含合成样本，并与全部训练及主动学习数据在**视频**与**脱敏账号**两个维度严格隔离。
+除早期封存的 `OjinjinBench-v1`（**1,310 条**评论）外，`v1.2.0` 新增了一套完全独立、时间上靠后的晚 11 月时间外双盲测试集 **`OjinjinBench-v2`（1,476 条干净样本，来自 33 个零重叠新视频；纯文本 AI 61 条且 80%+ 为隐蔽 AI，综合账号 AI 75 条，更接近真实评论区约 5% 的低正例分布）**。训练与选模阶段全程封存两套考卷，定稿后统一以导出 ONNX INT8 权重一次性开考。
 
-完整评测协议与交互式图表见 [`docs/BENCHMARK.md`](docs/BENCHMARK.md) 和 [`docs/index.html`](docs/index.html)。
+完整评测协议与明细见 [`docs/BENCHMARK.md`](docs/BENCHMARK.md) 与 [`docs/index.html`](docs/index.html)。
 
-### 1. 纯文本赛道（完整集 1,310 条，仅输入评论正文）
+### 0. v1.2.0 全系与两级级联双考卷总览（ONNX INT8 实测）
+
+| 方案（v1.2.0 ONNX INT8） | 体积 | 整页 20 条 | `Bench-v1` 纯文本<br>Full / Hard F0.5 | `Bench-v1`<br>+融合 F0.5 | `Bench-v2` 纯文本<br>Full F0.5 (R@P95) | `Bench-v2` 纯文本<br>Hard F0.5 | `Bench-v2` +融合<br>综合 F0.5 (R@P95) |
+|---|---:|---:|---|---:|---|---:|---|
+| **`OjinjinNet-Nano v1.2`** | **1.22 MB** | **3.4 ms** | `0.9353` / `0.9097` | `0.9615` | `0.8889` (`65.6%`) | `0.9155` | `0.9259` (`77.3%`) |
+| **`OjinjinNet-Lite v1.2`** (4 教师蒸馏) | 7.05 MB | 39.6 ms | `0.9542` / `0.9392` | `0.9693` | `0.8429` (`37.7%`) | `0.8955` | `0.9325` (`82.7%`) |
+| **`OjinjinNet-Standard v1.2`** | 16.86 MB | 105.9 ms | `0.9481` / `0.9284` | `0.9673` | `0.8612` (`62.3%`) | `0.8861` | `0.9164` (`77.3%`) |
+| **`OjinjinNet-Pro v1.2`** | 49.49 MB | 252.2 ms | **`0.9658`** / **`0.9495`** | **`0.9695`** | **`0.9072`** (`70.5%`) | `0.9259` | **`0.9668`** (`85.3%`) |
+| **`Nano → Pro`（L2D-FP · 实测 8.4% 转交）** | 1.22+49.5 MB | **24.6 ms (10.3×)** | `0.9599` / `0.9409` | `0.9651` | `0.8921` (`70.5%`) | `0.9259` | `0.9552` (`86.7%`) |
+| **`Nano → Pro`（L2D-FP · 实测 12.0% 转交）** | 1.22+49.5 MB | **33.6 ms (7.5×)** | `0.9639` / `0.9459` | `0.9666` | `0.8980` (**`72.1%`**) | **`0.9326`** | `0.9587` (**`88.0%`**) |
+| **`Nano → Pro`（Naive · 实测 11.5% 转交）** | 1.22+49.5 MB | **32.4 ms (7.8×)** | `0.9658` / `0.9495` | `0.9717` | **`0.9072`** (`70.5%`) | `0.9259` | `0.9633` (`85.3%`) |
+| *对比：`OjinjinNet-Pro v1.1`* | *49.49 MB* | *240.6 ms* | *0.9685 / 0.9563* | *0.9702* | *0.8861 (68.8%)* | *0.8955* | *—* |
+
+> 在时间跨度更远、新话题真人占比 95% 的 `Bench-v2` 纯文本赛道上，零自注意力的 `1.22 MB Nano` 反而高于 `7 MB Lite` 与 `17 MB Standard`：极小容量与多字词表卷积迫使模型只捕捉跨话题通用的 AI 腔调词组与节奏，减少对陌生新领域长评真人的误判；而在与训练语境接近、需要深层语义理解的 `Bench-v1` 上，`Lite v1.2`（`0.9542`）与 `Pro v1.2`（`0.9658`）仍发挥了预训练 Transformer 的优势。因此将 `Nano` 与 `Pro` 组合为两级级联，在速度（`21–33 ms`）与双卷精度间取得了最佳平衡。
+
+### 1. 纯文本赛道（OjinjinBench-v1 完整集 1,310 条，v1.0–v1.1 历史对照）
 
 | 模型 | 体积 | PR-AUC | Recall@P99% | Recall@P95% | Best F0.5 | 隐蔽 AI 召回 | 难负真人误杀率 |
 |---|---:|---:|---:|---:|---:|---:|---:|
@@ -175,6 +207,14 @@ print(scores)
 ---
 
 ## 版本更新记录
+
+### v1.2.0
+
+引入第 2 轮委员会主动学习（`AL-R2`，新增 1,354 条 11 月末真实高分歧/隐蔽 AI/防误杀长评金标）与精选非稀释蒸馏语料，并在全新时间外盲测卷 `OjinjinBench-v2`（1,476 条干净样本）上验证泛化能力：
+
+- **新增 `OjinjinNet-Nano`（1.22 MB · Static QDQ INT8）**：采用纯 ONNX 16K 双字 + 8K 三字哈希词表与 4 尺度空洞卷积，无自注意力层；整页 20 条仅 `3.4 ms`（短文本吞吐约 `25,000 条/秒`），在 `Bench-v2` 纯文本 `Best F0.5` 达 `0.8889`（高于 `Lite v1.2`、`Standard v1.2` 与 `Pro v1.1`）。
+- **新增 `OjinjinCascadeClassifier` 两级分诊推理**：内置防误杀拒识头（L2D-FP）与朴素置信度两种路由，约 `7%–12%` 转交 `Pro v1.2` 即可提速 `7.5× – 12.0×`（整页 `21–33 ms`），在 `Bench-v2` 上困难集 `F0.5` 达 `0.9326`、融合 `R@P95%` 达 `88.0%`。
+- **主力三档升级**：`Lite v1.2` 引入 4 教师蒸馏，`Bench-v1` 纯文本 `Best F0.5` 升至 `0.9542`（Hard `0.9392`）；`Standard v1.2` 在 `Bench-v2` 纯文本 `R@P95%` 提升至 `62.3%`；`Pro v1.2` 在 `Bench-v2` 纯文本 `Best F0.5` 提升至 `0.9072`，融合综合 `Best F0.5` 达 `0.9668`。
 
 ### v1.1.0
 

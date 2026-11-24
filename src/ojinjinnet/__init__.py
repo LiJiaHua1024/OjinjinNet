@@ -1,6 +1,6 @@
 """OjinjinNet: Ultra-lightweight on-device Chinese AI-comment detector (ONNX INT8)."""
 
-from .infer import OjinjinClassifier, WordPieceTokenizer
+from .infer import OjinjinCascadeClassifier, OjinjinClassifier, WordPieceTokenizer
 
-__all__ = ["OjinjinClassifier", "WordPieceTokenizer"]
-__version__ = "1.1.0"
+__all__ = ["OjinjinCascadeClassifier", "OjinjinClassifier", "WordPieceTokenizer"]
+__version__ = "1.2.0"
