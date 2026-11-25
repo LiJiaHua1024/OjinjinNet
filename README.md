@@ -93,6 +93,17 @@ uv run ojinjinnet --model-dir ./models/nano --cascade-strong-dir ./models/pro \
   "这波属实难绷" "怕的不是工具变强，是判断力变懒——这才是隐形成本。"
 ```
 
+6. Nano 高吞吐场景可并行执行不同长度桶；推理前建议先在本机用固定 benchmark 确认线程配置：
+
+```bash
+uv run ojinjinnet --model-dir ./models/nano --threads 4 --parallel-buckets \
+  "这波属实难绷" "不得不说这个视角确实很独特，值得深思。"
+
+uv run ojinjinnet-speedbench --model-dir ./models/nano --threads 1,2,4
+```
+
+`--parallel-buckets` 主要提升小模型、多长度混合 batch 的吞吐；在 8 线程及以上可能因 CPU oversubscription 反而变慢，因此保持显式开启。
+
 ---
 
 ## 评测结果（OjinjinBench-v1 与 OjinjinBench-v2）
