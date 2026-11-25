@@ -8,10 +8,15 @@ Head+Tail truncation so opening hooks and closing AI sign-offs both survive.
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import json
 import math
+import os
 import sys
+import threading
 import unicodedata
+from collections import OrderedDict
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -19,16 +24,19 @@ import numpy as np
 import onnxruntime as ort
 
 
+@lru_cache(maxsize=4096)
 def _is_whitespace(ch: str) -> bool:
     return ch in (" ", "\t", "\n", "\r") or unicodedata.category(ch) == "Zs"
 
 
+@lru_cache(maxsize=4096)
 def _is_control(ch: str) -> bool:
     if ch in ("\t", "\n", "\r"):
         return False
     return unicodedata.category(ch) in ("Cc", "Cf")
 
 
+@lru_cache(maxsize=4096)
 def _is_punctuation(ch: str) -> bool:
     cp = ord(ch)
     if (33 <= cp <= 47) or (58 <= cp <= 64) or (91 <= cp <= 96) or (123 <= cp <= 126):
@@ -36,6 +44,7 @@ def _is_punctuation(ch: str) -> bool:
     return unicodedata.category(ch).startswith("P")
 
 
+@lru_cache(maxsize=4096)
 def _is_chinese_char(cp: int) -> bool:
     return (
         (0x4E00 <= cp <= 0x9FFF)
@@ -49,6 +58,7 @@ def _is_chinese_char(cp: int) -> bool:
     )
 
 
+@lru_cache(maxsize=4096)
 def _strip_accents(text: str) -> str:
     return "".join(ch for ch in unicodedata.normalize("NFD", text) if unicodedata.category(ch) != "Mn")
 
@@ -67,6 +77,9 @@ class WordPieceTokenizer:
         self.unk_id = self.vocab.get("[UNK]", 100)
         self.cls_id = self.vocab.get("[CLS]", 101)
         self.sep_id = self.vocab.get("[SEP]", 102)
+        self._wordpiece_cache: OrderedDict[str, list[int]] = OrderedDict()
+        self._wordpiece_cache_lock = threading.Lock()
+        self._wordpiece_cache_limit = 8192
 
     def _basic_tokenize(self, text: str) -> list[str]:
         # 1. Clean control chars & pad CJK chars with spaces
@@ -100,7 +113,7 @@ class WordPieceTokenizer:
                 tokens.append(word[start:])
         return tokens
 
-    def _wordpiece(self, token: str) -> list[int]:
+    def _wordpiece_uncached(self, token: str) -> list[int]:
         if len(token) > 100:
             return [self.unk_id]
         sub_ids: list[int] = []
@@ -122,15 +135,110 @@ class WordPieceTokenizer:
             start = end
         return sub_ids
 
+    def _wordpiece(self, token: str) -> list[int]:
+        with self._wordpiece_cache_lock:
+            cached = self._wordpiece_cache.get(token)
+            if cached is not None:
+                self._wordpiece_cache.move_to_end(token)
+                return cached
+
+        ids = self._wordpiece_uncached(token)
+        with self._wordpiece_cache_lock:
+            cached = self._wordpiece_cache.get(token)
+            if cached is not None:
+                self._wordpiece_cache.move_to_end(token)
+                return cached
+            self._wordpiece_cache[token] = ids
+            if len(self._wordpiece_cache) > self._wordpiece_cache_limit:
+                self._wordpiece_cache.popitem(last=False)
+            return ids
+
+    def _split_raw_token(self, raw: str) -> list[str]:
+        word = _strip_accents(raw.lower())
+        tokens: list[str] = []
+        start = 0
+        for i, ch in enumerate(word):
+            if _is_punctuation(ch):
+                if i > start:
+                    tokens.append(word[start:i])
+                tokens.append(ch)
+                start = i + 1
+        if start < len(word):
+            tokens.append(word[start:])
+        return tokens
+
     def encode(self, text: str, max_len: int = 192, head_len: int = 140) -> list[int]:
         ids: list[int] = []
-        for tok in self._basic_tokenize(text):
-            ids.extend(self._wordpiece(tok))
+        raw: list[str] = []
+        vocab_get = self.vocab.get
+        unk_id = self.unk_id
+
+        def flush_raw() -> None:
+            if not raw:
+                return
+            for tok in self._split_raw_token("".join(raw)):
+                ids.extend(self._wordpiece(tok))
+            raw.clear()
+
+        for ch in text:
+            cp = ord(ch)
+            if cp == 0 or cp == 0xFFFD or _is_control(ch):
+                continue
+            if _is_whitespace(ch):
+                flush_raw()
+            elif _is_chinese_char(cp):
+                flush_raw()
+                ids.append(vocab_get(ch, unk_id))
+            else:
+                raw.append(ch)
+        flush_raw()
+
         body_budget = max_len - 2
         if len(ids) > body_budget:
             tail_len = body_budget - head_len
             ids = ids[:head_len] + ids[-tail_len:]
         return [self.cls_id] + ids + [self.sep_id]
+
+
+def _bucket_batches(
+    seqs: list[list[int]],
+    max_len: int,
+    batch_size: int,
+) -> list[tuple[list[int], list[list[int]]]]:
+    buckets: dict[int, list[int]] = {}
+    for idx, seq in enumerate(seqs):
+        n = len(seq)
+        key = 32 if n <= 32 else (64 if n <= 64 else (128 if n <= 128 else max_len))
+        buckets.setdefault(key, []).append(idx)
+
+    jobs: list[tuple[list[int], list[list[int]]]] = []
+    for key in sorted(buckets):
+        idxs = buckets[key]
+        for i in range(0, len(idxs), batch_size):
+            sub_idxs = idxs[i : i + batch_size]
+            jobs.append((sub_idxs, [seqs[k] for k in sub_idxs]))
+    return jobs
+
+
+def _run_bucketed_items(
+    batch_fn: Any,
+    seqs: list[list[int]],
+    max_len: int,
+    batch_size: int,
+    parallel: bool,
+    executor: concurrent.futures.ThreadPoolExecutor | None,
+) -> list[Any]:
+    jobs = _bucket_batches(seqs, max_len=max_len, batch_size=batch_size)
+    if parallel and len(jobs) > 1 and executor is not None:
+        job_results = list(executor.map(lambda job: batch_fn(job[1]), jobs))
+    else:
+        job_results = [batch_fn(job_seqs) for _, job_seqs in jobs]
+
+    output: list[Any] = [None] * len(seqs)
+    for (idxs, _), rows in zip(jobs, job_results):
+        for idx, val in zip(idxs, rows):
+            output[idx] = val
+    return output
 
 
 class OjinjinClassifier:
@@ -140,6 +248,7 @@ class OjinjinClassifier:
         self,
         model_dir: str | Path,
         num_threads: int = 4,
+        parallel_buckets: bool = False,
     ) -> None:
         self.model_dir = Path(model_dir)
         model_path = self.model_dir / "model_int8.onnx"
@@ -172,6 +281,28 @@ class OjinjinClassifier:
         self.session = ort.InferenceSession(
             str(model_path), sess_options=opts, providers=["CPUExecutionProvider"]
         )
+        self.parallel_buckets = parallel_buckets
+        self._parallel_executor: concurrent.futures.ThreadPoolExecutor | None = None
+
+    def _get_parallel_executor(self) -> concurrent.futures.ThreadPoolExecutor:
+        if self._parallel_executor is None:
+            workers = min(4, max(1, os.cpu_count() or 1))
+            self._parallel_executor = concurrent.futures.ThreadPoolExecutor(
+                max_workers=workers,
+                thread_name_prefix="ojinjin-buckets",
+            )
+        return self._parallel_executor
+
+    def close(self) -> None:
+        if self._parallel_executor is not None:
+            self._parallel_executor.shutdown(wait=True)
+            self._parallel_executor = None
+
+    def __enter__(self) -> "OjinjinClassifier":
+        return self
+
+    def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> None:
+        self.close()
 
     def _run_batch(self, seqs: list[list[int]]) -> np.ndarray:
         pad_id = self.tokenizer.pad_id
@@ -188,6 +319,7 @@ class OjinjinClassifier:
         texts: list[str],
         batch_size: int = 32,
         bucketed: bool = True,
+        parallel_buckets: bool | None = None,
     ) -> np.ndarray:
         """Return temperature-calibrated log-odds for each comment text.
 
@@ -197,6 +329,8 @@ class OjinjinClassifier:
         """
         if not texts:
             return np.zeros((0,), dtype=np.float32)
+        if batch_size < 1:
+            raise ValueError("batch_size must be >= 1")
         seqs = [self.tokenizer.encode(t, max_len=self.max_len, head_len=self.head_len) for t in texts]
         if not bucketed or len(seqs) <= 1:
             outs: list[np.ndarray] = []
@@ -204,30 +338,31 @@ class OjinjinClassifier:
                 outs.append(self._run_batch(seqs[i : i + batch_size]))
             return np.concatenate(outs, axis=0)
 
-        buckets: dict[int, list[int]] = {}
-        for idx, seq in enumerate(seqs):
-            n = len(seq)
-            key = 32 if n <= 32 else (64 if n <= 64 else (128 if n <= 128 else self.max_len))
-            buckets.setdefault(key, []).append(idx)
-
-        result = np.empty((len(seqs),), dtype=np.float32)
-        for key in sorted(buckets):
-            idxs = buckets[key]
-            for i in range(0, len(idxs), batch_size):
-                sub_idxs = idxs[i : i + batch_size]
-                sub_logits = self._run_batch([seqs[k] for k in sub_idxs])
-                for k, val in zip(sub_idxs, sub_logits):
-                    result[k] = val
-        return result
+        use_parallel = self.parallel_buckets if parallel_buckets is None else parallel_buckets
+        rows = _run_bucketed_items(
+            self._run_batch,
+            seqs,
+            max_len=self.max_len,
+            batch_size=batch_size,
+            parallel=use_parallel,
+            executor=self._get_parallel_executor() if use_parallel else None,
+        )
+        return np.asarray(rows, dtype=np.float32)
 
     def predict_proba(
         self,
         texts: list[str],
         batch_size: int = 32,
         bucketed: bool = True,
+        parallel_buckets: bool | None = None,
     ) -> list[float]:
         """Return calibrated AI-generated probability in [0, 1] using comment text only."""
-        logits = self.predict_logits(texts, batch_size=batch_size, bucketed=bucketed)
+        logits = self.predict_logits(
+            texts,
+            batch_size=batch_size,
+            bucketed=bucketed,
+            parallel_buckets=parallel_buckets,
+        )
         probs = 1.0 / (1.0 + np.exp(-np.clip(logits, -30.0, 30.0)))
         return [float(p) for p in probs]
 
@@ -262,10 +397,20 @@ class OjinjinCascadeClassifier:
         target_budget: int = 10,
         defer_threshold: float | None = None,
         num_threads: int = 4,
+        parallel_buckets: bool = False,
     ) -> None:
         self.fast_dir = Path(fast_model_dir)
-        self.strong = OjinjinClassifier(strong_model_dir, num_threads=num_threads)
-        self.fast = OjinjinClassifier(self.fast_dir, num_threads=num_threads)
+        self.strong = OjinjinClassifier(
+            strong_model_dir,
+            num_threads=num_threads,
+            parallel_buckets=parallel_buckets,
+        )
+        self.fast = OjinjinClassifier(
+            self.fast_dir,
+            num_threads=num_threads,
+            parallel_buckets=parallel_buckets,
+        )
+        self.parallel_buckets = parallel_buckets
 
         manifest_path = self.fast_dir / "manifest.json"
         self.manifest: dict[str, Any] = (
@@ -307,33 +452,41 @@ class OjinjinCascadeClassifier:
 
         seqs = [self.fast.tokenizer.encode(t, max_len=self.fast.max_len, head_len=self.fast.head_len) for t in texts]
         pad_id = self.fast.tokenizer.pad_id
-        n = len(seqs)
-        out_z = np.empty((n,), dtype=np.float32)
-        out_d = np.empty((n,), dtype=np.float32)
-        buckets: dict[int, list[int]] = {}
-        for idx, seq in enumerate(seqs):
-            l = len(seq)
-            key = 32 if l <= 32 else (64 if l <= 64 else (128 if l <= 128 else self.fast.max_len))
-            buckets.setdefault(key, []).append(idx)
-        for key in sorted(buckets):
-            idxs = buckets[key]
-            for i in range(0, len(idxs), batch_size):
-                sub = idxs[i : i + batch_size]
-                sub_seqs = [seqs[k] for k in sub]
-                ml = max(len(s) for s in sub_seqs)
-                ids = np.full((len(sub), ml), pad_id, dtype=np.int64)
-                mask = np.zeros((len(sub), ml), dtype=np.int64)
-                for j, s in enumerate(sub_seqs):
-                    ids[j, : len(s)] = s
-                    mask[j, : len(s)] = 1
-                z, d = self.cascade_session.run(None, {"input_ids": ids, "attention_mask": mask})
-                z_flat = z.reshape(-1).astype(np.float32)
-                d_flat = d.reshape(-1).astype(np.float32)
-                d_prob = 1.0 / (1.0 + np.exp(-np.clip(d_flat, -30.0, 30.0)))
-                for k, zv, dv in zip(sub, z_flat, d_prob):
-                    out_z[k] = zv
-                    out_d[k] = dv
+
+        def run_cascade_batch(sub_seqs: list[list[int]]) -> list[tuple[float, float]]:
+            ml = max(len(s) for s in sub_seqs)
+            ids = np.full((len(sub_seqs), ml), pad_id, dtype=np.int64)
+            mask = np.zeros((len(sub_seqs), ml), dtype=np.int64)
+            for j, s in enumerate(sub_seqs):
+                ids[j, : len(s)] = s
+                mask[j, : len(s)] = 1
+            z, d = self.cascade_session.run(None, {"input_ids": ids, "attention_mask": mask})
+            z_flat = z.reshape(-1).astype(np.float32)
+            d_flat = d.reshape(-1).astype(np.float32)
+            d_prob = 1.0 / (1.0 + np.exp(-np.clip(d_flat, -30.0, 30.0)))
+            return list(zip(z_flat, d_prob))
+
+        rows = _run_bucketed_items(
+            run_cascade_batch,
+            seqs,
+            max_len=self.fast.max_len,
+            batch_size=batch_size,
+            parallel=self.parallel_buckets,
+            executor=self.fast._get_parallel_executor() if self.parallel_buckets else None,
+        )
+        out_z = np.asarray([row[0] for row in rows], dtype=np.float32)
+        out_d = np.asarray([row[1] for row in rows], dtype=np.float32)
         return out_z, out_d
+
+    def close(self) -> None:
+        self.fast.close()
+        self.strong.close()
+
+    def __enter__(self) -> "OjinjinCascadeClassifier":
+        return self
+
+    def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> None:
+        self.close()
 
     def predict_detailed(
         self,
@@ -381,6 +534,11 @@ def main() -> None:
     parser.add_argument("--cascade-strategy", choices=["l2d", "naive"], default="l2d", help="Cascade routing strategy")
     parser.add_argument("--cascade-budget", type=int, choices=[10, 15, 20], default=10, help="Target escalation budget (%)")
     parser.add_argument("--threads", type=int, default=4, help="CPU threads for ONNX Runtime")
+    parser.add_argument(
+        "--parallel-buckets",
+        action="store_true",
+        help="Run length-bucketed ONNX batches concurrently (mainly useful for tiny models such as Nano)",
+    )
     parser.add_argument("texts", nargs="*", help="Comment strings to score (or pipe lines via stdin)")
     args = parser.parse_args()
 
@@ -397,13 +555,18 @@ def main() -> None:
             strategy=args.cascade_strategy,
             target_budget=args.cascade_budget,
             num_threads=args.threads,
+            parallel_buckets=args.parallel_buckets,
         )
         for text, row in zip(texts, cas.predict_detailed(texts)):
             tag = "AI" if row["prob"] >= 0.5 else "Human"
             route = "Pro" if row["escalated"] else "Fast"
             print(f"[{tag:5s}|{route:4s}] p={row['prob']:.4f} (fast={row['fast_prob']:.4f}, defer={row['defer_score']:.3f}) | {text}")
     else:
-        clf = OjinjinClassifier(args.model_dir, num_threads=args.threads)
+        clf = OjinjinClassifier(
+            args.model_dir,
+            num_threads=args.threads,
+            parallel_buckets=args.parallel_buckets,
+        )
         probs = clf.predict_proba(texts)
         for text, p in zip(texts, probs):
             tag = "AI" if p >= 0.5 else "Human"

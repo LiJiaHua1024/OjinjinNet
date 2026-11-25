@@ -24,6 +24,7 @@ train = [
 
 [project.scripts]
 ojinjinnet = "ojinjinnet.infer:main"
+ojinjinnet-speedbench = "ojinjinnet.speedbench:main"
 
 [build-system]
 requires = ["hatchling"]
