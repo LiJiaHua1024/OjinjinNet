@@ -219,12 +219,12 @@
           </div>
           <div class="kpi">
             <div class="muted">Nano v1.2 · 1.22 MB</div>
-            <div class="kpi-v c-pri">3.4 ms / 24,959 /s</div>
+            <div class="kpi-v c-pri">2.0 ms / 22,483 /s</div>
             <div class="muted">Bench-v2 纯文本 F0.5 0.8889</div>
           </div>
           <div class="kpi">
             <div class="muted">Nano → Pro · 12% 转交</div>
-            <div class="kpi-v c-acc">33.6 ms (7.5×)</div>
+            <div class="kpi-v c-acc">31.9 ms (5.1×)</div>
             <div class="muted">B2 Hard 0.9259 · 融合 R@P95 88.0%</div>
           </div>
         </div>
@@ -608,26 +608,26 @@
       r99:        { tag: "Recall@P99% · 越高越好", text: "精确率 ≥ 99%（每过滤 100 条最多 1 条误判）时的保守档召回率；小正例集上对个别边界样本敏感。" },
       stealth95:  { tag: "隐蔽 AI 召回 · 越高越好", text: "Bench-v1 为 160 条规则零分隐蔽 AI；Bench-v2 为标注隐蔽 AI 子集上的 P95 捕获率。" },
       hard_fpr95: { tag: "难负真人误杀率 · 越低越好", text: "在高难真人长评（科普/影评/反串）上的误判比例。" },
-      ms:         { tag: "PC 整页 20 条耗时 · 越低越好", text: "桌面端 4 核 CPU 按长度分桶（12×32 + 5×64 + 3×128）推理 20 条评论的总耗时（毫秒）。" },
+      ms:         { tag: "PC 整页 20 条耗时 · 越低越好", text: "桌面端（Ryzen 5 5600X · 4 线程 --parallel-buckets）按长度分桶（12×32 + 5×64 + 3×128）端到端推理 20 条评论总耗时（p50 毫秒；级联为真实分页 p50）。" },
       size:       { tag: "模型体积 · 越小越轻", text: "端侧 ONNX INT8 磁盘体积（MB）；级联方案为 Nano + Pro 合计占用。" },
       overall:    { tag: "Overall 综合分 · 越高越好", text: "公开加权公式：30% PR-AUC + 30% Best F0.5 + 25% 隐蔽 AI 召回 + 15% (1 − 难负误杀率)。" },
     };
 
     const HW_SPECS = {
-      nano:     { pcPage: "3.4 ms",  pcB1: "0.35 ms", qps: "24,959 条/秒", mobile: "未实测 (PC 3.4ms)", mem: "< 12 MB" },
-      lite:     { pcPage: "39.6 ms", pcB1: "3.1 ms",  qps: "1,868 条/秒",  mobile: "56.4 ms (4核865)",  mem: "+41.9 MB" },
-      std:      { pcPage: "105.9 ms",pcB1: "6.1 ms",  qps: "842 条/秒",    mobile: "106.4 ms (4核865)", mem: "+53.9 MB" },
-      pro:      { pcPage: "252.2 ms",pcB1: "15.4 ms", qps: "285 条/秒",    mobile: "314.2 ms (4核865)", mem: "+83.7 MB" },
-      cas_10:   { pcPage: "24.6 ms", pcB1: "0.35 / 15.4 ms", qps: "~3,000 条/秒", mobile: "B2实测转交 8.4%", mem: "Nano + Pro" },
-      cas_15_l: { pcPage: "33.6 ms", pcB1: "0.35 / 15.4 ms", qps: "~2,200 条/秒", mobile: "B2实测转交 12.0%", mem: "Nano + Pro" },
-      cas_15_n: { pcPage: "32.4 ms", pcB1: "0.35 / 15.4 ms", qps: "~2,300 条/秒", mobile: "B2实测转交 11.5%", mem: "Nano + Pro" },
+      nano:     { pcPage: "2.0 ms (旧版 5.3ms)", pcB1: "0.44 ms", qps: "22,483 条/秒", mobile: "未实测 (PC 2.0ms)", mem: "< 12 MB" },
+      lite:     { pcPage: "24.2 ms (串行 39.5)", pcB1: "2.1 ms",  qps: "2,341 条/秒",  mobile: "56.4 ms (4核865)",  mem: "+41.9 MB" },
+      std:      { pcPage: "52.4 ms (串行 78.8)", pcB1: "3.4 ms",  qps: "973 条/秒",    mobile: "106.4 ms (4核865)", mem: "+53.9 MB" },
+      pro:      { pcPage: "161.3 ms (串行 211.2)", pcB1: "9.1 ms", qps: "470 条/秒",   mobile: "314.2 ms (4核865)", mem: "+83.7 MB" },
+      cas_10:   { pcPage: "23.6 ms (均值 28.6)", pcB1: "0.44 / 9.1 ms", qps: "~850 条/秒 (整页)", mobile: "B2实测转交 8.4%", mem: "Nano + Pro" },
+      cas_15_l: { pcPage: "31.9 ms (均值 36.3)", pcB1: "0.44 / 9.1 ms", qps: "~630 条/秒 (整页)", mobile: "B2实测转交 12.0%", mem: "Nano + Pro" },
+      cas_15_n: { pcPage: "29.4 ms (均值 35.2)", pcB1: "0.44 / 9.1 ms", qps: "~680 条/秒 (整页)", mobile: "B2实测转交 11.5%", mem: "Nano + Pro" },
       teacher:  { pcPage: "离线 GPU", pcB1: "离线参考", qps: "离线参考",   mobile: "离线参考",          mem: ">600 MB" },
       rules:    { pcPage: "<0.2 ms", pcB1: "<0.02 ms",qps: ">10万条/秒",   mobile: "<1 ms",             mem: "0 MB" },
     };
 
     const MODELS = [
       // ---- v1.2 Single Models ----
-      { id: "pro_v12_fus", tier: "pro", hw: "pro", ver: "v12", track: "fusion", pairPrev: "pro_v11_fus", name: "Pro v1.2 (MacBERT-6L + 融合)", short: "Pro v1.2 融合", badge: "综合精度最高", size: 49.49, ms: { b1: 252.2, b2: 252.2 },
+      { id: "pro_v12_fus", tier: "pro", hw: "pro", ver: "v12", track: "fusion", pairPrev: "pro_v11_fus", name: "Pro v1.2 (MacBERT-6L + 融合)", short: "Pro v1.2 融合", badge: "综合精度最高", size: 49.49, ms: { b1: 161.3, b2: 161.3 },
         b2: {
           full: { pr_auc: 0.97084, r99: 0.8400, r95: 0.8533, f05: 0.9633, f1: 0.9143, stealth95: 0.8254, hard_fpr95: 0.0086, caught99: 62, fp99: 0, caught95: 64, fp95: 2 },
           hard: { pr_auc: 0.98454, r99: 0.8095, r95: 0.8254, f05: 0.9551, f1: 0.9375, stealth95: 0.8254, hard_fpr95: 0.0086, caught99: 50, fp99: 0, caught95: 52, fp95: 2 }
@@ -637,7 +637,7 @@
           hard: { pr_auc: 0.97846, r99: 0.7125, r95: 0.9062, f05: 0.9440, f1: 0.9333, stealth95: 0.9062, hard_fpr95: 0.0113, caught99: 114, fp99: 1, caught95: 145, fp95: 7 }
         }
       },
-      { id: "lite_v12_fus", tier: "lite", hw: "lite", ver: "v12", track: "fusion", pairPrev: "lite_v11_fus", name: "Lite v1.2 (MiniRBT KD + 融合)", short: "Lite v1.2 融合", badge: "7 MB 4教师蒸馏", size: 7.05, ms: { b1: 39.6, b2: 39.6 },
+      { id: "lite_v12_fus", tier: "lite", hw: "lite", ver: "v12", track: "fusion", pairPrev: "lite_v11_fus", name: "Lite v1.2 (MiniRBT KD + 融合)", short: "Lite v1.2 融合", badge: "7 MB 4教师蒸馏", size: 7.05, ms: { b1: 24.2, b2: 24.2 },
         b2: {
           full: { pr_auc: 0.95871, r99: 0.6000, r95: 0.8267, f05: 0.9325, f1: 0.9067, stealth95: 0.7937, hard_fpr95: 0.0043, caught99: 45, fp99: 0, caught95: 61, fp95: 3 },
           hard: { pr_auc: 0.98194, r99: 0.7302, r95: 0.9206, f05: 0.9571, f1: 0.9431, stealth95: 0.9206, hard_fpr95: 0.0129, caught99: 45, fp99: 0, caught95: 58, fp95: 3 }
@@ -647,7 +647,7 @@
           hard: { pr_auc: 0.97872, r99: 0.7500, r95: 0.8625, f05: 0.9410, f1: 0.9270, stealth95: 0.8625, hard_fpr95: 0.0113, caught99: 120, fp99: 1, caught95: 138, fp95: 7 }
         }
       },
-      { id: "nano_v12_fus", tier: "nano", hw: "nano", ver: "v12", track: "fusion", name: "Nano v1.2 (1.22MB + 融合)", short: "Nano v1.2 融合", badge: "1.22 MB 极速", size: 1.22, ms: { b1: 3.4, b2: 3.4 },
+      { id: "nano_v12_fus", tier: "nano", hw: "nano", ver: "v12", track: "fusion", name: "Nano v1.2 (1.22MB + 融合)", short: "Nano v1.2 融合", badge: "1.22 MB 极速", size: 1.22, ms: { b1: 2.0, b2: 2.0 },
         b2: {
           full: { pr_auc: 0.96375, r99: 0.6800, r95: 0.7733, f05: 0.9259, f1: 0.9028, stealth95: 0.7302, hard_fpr95: 0.0000, caught99: 51, fp99: 0, caught95: 58, fp95: 3 },
           hard: { pr_auc: 0.98521, r99: 0.7302, r95: 0.9365, f05: 0.9498, f1: 0.9440, stealth95: 0.9365, hard_fpr95: 0.0129, caught99: 46, fp99: 0, caught95: 58, fp95: 3 }
@@ -657,7 +657,7 @@
           hard: { pr_auc: 0.96676, r99: 0.7125, r95: 0.7688, f05: 0.9239, f1: 0.9207, stealth95: 0.7688, hard_fpr95: 0.0097, caught99: 114, fp99: 1, caught95: 123, fp95: 6 }
         }
       },
-      { id: "std_v12_fus", tier: "std", hw: "std", ver: "v12", track: "fusion", pairPrev: "std_v11_fus", name: "Standard v1.2 (BGE + 融合)", short: "Std v1.2 融合", badge: "17 MB 均衡档", size: 16.86, ms: { b1: 105.9, b2: 105.9 },
+      { id: "std_v12_fus", tier: "std", hw: "std", ver: "v12", track: "fusion", pairPrev: "std_v11_fus", name: "Standard v1.2 (BGE + 融合)", short: "Std v1.2 融合", badge: "17 MB 均衡档", size: 16.86, ms: { b1: 52.4, b2: 52.4 },
         b2: {
           full: { pr_auc: 0.96268, r99: 0.6400, r95: 0.7733, f05: 0.9121, f1: 0.8889, stealth95: 0.7460, hard_fpr95: 0.0043, caught99: 47, fp99: 0, caught95: 58, fp95: 3 },
           hard: { pr_auc: 0.97888, r99: 0.7143, r95: 0.7778, f05: 0.9288, f1: 0.9375, stealth95: 0.7778, hard_fpr95: 0.0086, caught99: 44, fp99: 0, caught95: 49, fp95: 2 }
@@ -668,7 +668,7 @@
         }
       },
 
-      { id: "pro_v12_txt", tier: "pro", hw: "pro", ver: "v12", track: "text", pairPrev: "pro_v11_txt", name: "Pro v1.2 (MacBERT-6L 纯文本)", short: "Pro v1.2 纯文本", badge: "纯文本最高", size: 49.49, ms: { b1: 252.2, b2: 252.2 },
+      { id: "pro_v12_txt", tier: "pro", hw: "pro", ver: "v12", track: "text", pairPrev: "pro_v11_txt", name: "Pro v1.2 (MacBERT-6L 纯文本)", short: "Pro v1.2 纯文本", badge: "纯文本最高", size: 49.49, ms: { b1: 161.3, b2: 161.3 },
         b2: {
           full: { pr_auc: 0.90513, r99: 0.4098, r95: 0.7049, f05: 0.9072, f1: 0.8496, stealth95: 0.5397, hard_fpr95: 0.0043, caught99: 25, fp99: 0, caught95: 43, fp95: 1 },
           hard: { pr_auc: 0.95013, r99: 0.6939, r95: 0.7959, f05: 0.9189, f1: 0.8776, stealth95: 0.6190, hard_fpr95: 0.0086, caught99: 34, fp99: 0, caught95: 39, fp95: 2 }
@@ -678,7 +678,7 @@
           hard: { pr_auc: 0.96981, r99: 0.3063, r95: 0.8875, f05: 0.9511, f1: 0.9255, stealth95: 0.8875, hard_fpr95: 0.0113, caught99: 49, fp99: 0, caught95: 142, fp95: 7 }
         }
       },
-      { id: "nano_v12_txt", tier: "nano", hw: "nano", ver: "v12", track: "text", name: "Nano v1.2 (1.22MB 纯文本)", short: "Nano v1.2 纯文本", badge: "3.4 ms / 页", size: 1.22, ms: { b1: 3.4, b2: 3.4 },
+      { id: "nano_v12_txt", tier: "nano", hw: "nano", ver: "v12", track: "text", name: "Nano v1.2 (1.22MB 纯文本)", short: "Nano v1.2 纯文本", badge: "2.0 ms / 页", size: 1.22, ms: { b1: 2.0, b2: 2.0 },
         b2: {
           full: { pr_auc: 0.88175, r99: 0.3770, r95: 0.6557, f05: 0.8889, f1: 0.8319, stealth95: 0.5238, hard_fpr95: 0.0000, caught99: 23, fp99: 0, caught95: 40, fp95: 2 },
           hard: { pr_auc: 0.94039, r99: 0.6735, r95: 0.7959, f05: 0.9155, f1: 0.8667, stealth95: 0.6190, hard_fpr95: 0.0086, caught99: 32, fp99: 0, caught95: 39, fp95: 2 }
@@ -688,7 +688,7 @@
           hard: { pr_auc: 0.92929, r99: 0.1938, r95: 0.6375, f05: 0.9097, f1: 0.8831, stealth95: 0.6375, hard_fpr95: 0.0081, caught99: 31, fp99: 0, caught95: 102, fp95: 5 }
         }
       },
-      { id: "std_v12_txt", tier: "std", hw: "std", ver: "v12", track: "text", pairPrev: "std_v11_txt", name: "Standard v1.2 (BGE 纯文本)", short: "Std v1.2 纯文本", badge: "17 MB 纯文本", size: 16.86, ms: { b1: 105.9, b2: 105.9 },
+      { id: "std_v12_txt", tier: "std", hw: "std", ver: "v12", track: "text", pairPrev: "std_v11_txt", name: "Standard v1.2 (BGE 纯文本)", short: "Std v1.2 纯文本", badge: "17 MB 纯文本", size: 16.86, ms: { b1: 52.4, b2: 52.4 },
         b2: {
           full: { pr_auc: 0.85195, r99: 0.0328, r95: 0.5574, f05: 0.8515, f1: 0.8305, stealth95: 0.4603, hard_fpr95: 0.0043, caught99: 2, fp99: 0, caught95: 34, fp95: 1 },
           hard: { pr_auc: 0.89106, r99: 0.0408, r95: 0.5918, f05: 0.8861, f1: 0.8750, stealth95: 0.4603, hard_fpr95: 0.0043, caught99: 2, fp99: 0, caught95: 28, fp95: 1 }
@@ -698,7 +698,7 @@
           hard: { pr_auc: 0.95043, r99: 0.3125, r95: 0.8063, f05: 0.9265, f1: 0.8903, stealth95: 0.8063, hard_fpr95: 0.0097, caught99: 50, fp99: 0, caught95: 129, fp95: 6 }
         }
       },
-      { id: "lite_v12_txt", tier: "lite", hw: "lite", ver: "v12", track: "text", pairPrev: "lite_v11_txt", name: "Lite v1.2 (MiniRBT KD 纯文本)", short: "Lite v1.2 纯文本", badge: "B1 +0.0128", size: 7.05, ms: { b1: 39.6, b2: 39.6 },
+      { id: "lite_v12_txt", tier: "lite", hw: "lite", ver: "v12", track: "text", pairPrev: "lite_v11_txt", name: "Lite v1.2 (MiniRBT KD 纯文本)", short: "Lite v1.2 纯文本", badge: "B1 +0.0128", size: 7.05, ms: { b1: 24.2, b2: 24.2 },
         b2: {
           full: { pr_auc: 0.85095, r99: 0.3279, r95: 0.3934, f05: 0.8429, f1: 0.8000, stealth95: 0.3333, hard_fpr95: 0.0000, caught99: 19, fp99: 0, caught95: 24, fp95: 1 },
           hard: { pr_auc: 0.93095, r99: 0.4286, r95: 0.5306, f05: 0.8955, f1: 0.8824, stealth95: 0.4127, hard_fpr95: 0.0043, caught99: 21, fp99: 0, caught95: 26, fp95: 1 }
@@ -710,7 +710,7 @@
       },
 
       // ---- v1.2 Cascades ----
-      { id: "cas_l2d15_fus", tier: "cascade", hw: "cas_15_l", ver: "v12", track: "fusion", name: "Nano→Pro (L2D-FP 15% + 融合)", short: "级联 L2D 15% 融合", badge: "R@P95 88.0%", size: 50.71, ms: { b1: 51.9, b2: 33.6 },
+      { id: "cas_l2d15_fus", tier: "cascade", hw: "cas_15_l", ver: "v12", track: "fusion", name: "Nano→Pro (L2D-FP 15% + 融合)", short: "级联 L2D 15% 融合", badge: "R@P95 88.0%", size: 50.71, ms: { b1: 53.8, b2: 31.9 },
         b2: {
           full: { pr_auc: 0.97180, r99: 0.7733, r95: 0.8800, f05: 0.9552, f1: 0.9167, stealth95: 0.8571, hard_fpr95: 0.0086, caught99: 58, fp99: 0, caught95: 65, fp95: 3 },
           hard: { pr_auc: 0.98456, r99: 0.8254, r95: 0.8571, f05: 0.9594, f1: 0.9375, stealth95: 0.8571, hard_fpr95: 0.0086, caught99: 51, fp99: 0, caught95: 53, fp95: 2 }
@@ -720,7 +720,7 @@
           hard: { pr_auc: 0.97557, r99: 0.7438, r95: 0.8438, f05: 0.9326, f1: 0.9325, stealth95: 0.8438, hard_fpr95: 0.0113, caught99: 119, fp99: 1, caught95: 135, fp95: 7 }
         }
       },
-      { id: "cas_l2d10_fus", tier: "cascade", hw: "cas_10", ver: "v12", track: "fusion", name: "Nano→Pro (L2D-FP 10% + 融合)", short: "级联 L2D 10% 融合", badge: "10.3× 提速", size: 50.71, ms: { b1: 39.4, b2: 24.6 },
+      { id: "cas_l2d10_fus", tier: "cascade", hw: "cas_10", ver: "v12", track: "fusion", name: "Nano→Pro (L2D-FP 10% + 融合)", short: "级联 L2D 10% 融合", badge: "6.8× 提速", size: 50.71, ms: { b1: 36.7, b2: 23.6 },
         b2: {
           full: { pr_auc: 0.97115, r99: 0.7733, r95: 0.8667, f05: 0.9517, f1: 0.9091, stealth95: 0.8413, hard_fpr95: 0.0086, caught99: 58, fp99: 0, caught95: 64, fp95: 3 },
           hard: { pr_auc: 0.98304, r99: 0.8095, r95: 0.8413, f05: 0.9551, f1: 0.9291, stealth95: 0.8413, hard_fpr95: 0.0086, caught99: 50, fp99: 0, caught95: 52, fp95: 2 }
@@ -730,7 +730,7 @@
           hard: { pr_auc: 0.97398, r99: 0.7375, r95: 0.8063, f05: 0.9293, f1: 0.9268, stealth95: 0.8063, hard_fpr95: 0.0097, caught99: 118, fp99: 1, caught95: 129, fp95: 6 }
         }
       },
-      { id: "cas_l2d15_txt", tier: "cascade", hw: "cas_15_l", ver: "v12", track: "text", name: "Nano→Pro (L2D-FP 15% 纯文本)", short: "级联 L2D 15% 纯文本", badge: "7.5× 提速 · R95 72.1%", size: 50.71, ms: { b1: 51.9, b2: 33.6 },
+      { id: "cas_l2d15_txt", tier: "cascade", hw: "cas_15_l", ver: "v12", track: "text", name: "Nano→Pro (L2D-FP 15% 纯文本)", short: "级联 L2D 15% 纯文本", badge: "5.1× 提速 · R95 72.1%", size: 50.71, ms: { b1: 53.8, b2: 31.9 },
         b2: {
           full: { pr_auc: 0.90348, r99: 0.3607, r95: 0.7213, f05: 0.8980, f1: 0.8421, stealth95: 0.5556, hard_fpr95: 0.0000, caught99: 21, fp99: 0, caught95: 43, fp95: 2 },
           hard: { pr_auc: 0.95298, r99: 0.7143, r95: 0.7959, f05: 0.9259, f1: 0.8889, stealth95: 0.6190, hard_fpr95: 0.0086, caught99: 35, fp99: 0, caught95: 39, fp95: 2 }
@@ -740,7 +740,7 @@
           hard: { pr_auc: 0.95268, r99: 0.3312, r95: 0.8875, f05: 0.9443, f1: 0.9201, stealth95: 0.8875, hard_fpr95: 0.0113, caught99: 53, fp99: 0, caught95: 142, fp95: 7 }
         }
       },
-      { id: "cas_l2d10_txt", tier: "cascade", hw: "cas_10", ver: "v12", track: "text", name: "Nano→Pro (L2D-FP 10% 纯文本)", short: "级联 L2D 10% 纯文本", badge: "10.3× 提速", size: 50.71, ms: { b1: 39.4, b2: 24.6 },
+      { id: "cas_l2d10_txt", tier: "cascade", hw: "cas_10", ver: "v12", track: "text", name: "Nano→Pro (L2D-FP 10% 纯文本)", short: "级联 L2D 10% 纯文本", badge: "6.8× 提速", size: 50.71, ms: { b1: 36.7, b2: 23.6 },
         b2: {
           full: { pr_auc: 0.90422, r99: 0.3443, r95: 0.7049, f05: 0.8921, f1: 0.8421, stealth95: 0.5397, hard_fpr95: 0.0000, caught99: 20, fp99: 0, caught95: 42, fp95: 2 },
           hard: { pr_auc: 0.95258, r99: 0.6939, r95: 0.7959, f05: 0.9189, f1: 0.8889, stealth95: 0.6190, hard_fpr95: 0.0086, caught99: 34, fp99: 0, caught95: 39, fp95: 2 }
@@ -750,7 +750,7 @@
           hard: { pr_auc: 0.94454, r99: 0.2750, r95: 0.8625, f05: 0.9392, f1: 0.9091, stealth95: 0.8625, hard_fpr95: 0.0113, caught99: 44, fp99: 0, caught95: 138, fp95: 7 }
         }
       },
-      { id: "cas_naive15_txt", tier: "cascade", hw: "cas_15_n", ver: "v12", track: "text", name: "Nano→Pro (Naive 15% 纯文本)", short: "级联 Naive 15% 纯文本", badge: "7.8× · 持平 Pro", size: 50.71, ms: { b1: 53.8, b2: 32.4 },
+      { id: "cas_naive15_txt", tier: "cascade", hw: "cas_15_n", ver: "v12", track: "text", name: "Nano→Pro (Naive 15% 纯文本)", short: "级联 Naive 15% 纯文本", badge: "5.5× · 持平 Pro", size: 50.71, ms: { b1: 47.7, b2: 29.4 },
         b2: {
           full: { pr_auc: 0.91416, r99: 0.4426, r95: 0.7049, f05: 0.9072, f1: 0.8496, stealth95: 0.5397, hard_fpr95: 0.0043, caught99: 26, fp99: 0, caught95: 43, fp95: 1 },
           hard: { pr_auc: 0.95147, r99: 0.6939, r95: 0.7959, f05: 0.9189, f1: 0.8889, stealth95: 0.6190, hard_fpr95: 0.0086, caught99: 34, fp99: 0, caught95: 39, fp95: 2 }
@@ -936,7 +936,7 @@
         : "整页 20 条推理耗时 vs 性能前沿（越靠左上越快且越准）";
       document.getElementById("pareto-sub").innerHTML = xAxis === "size"
         ? '横轴为 ONNX INT8 磁盘体积（对数刻度 MB · 涵盖 <strong class="c-pri">1.22 MB Nano</strong> 至 49.5 MB Pro）；实心圆 <strong class="c-suc">●</strong> 融合，实心菱形 <strong class="c-pri">◆</strong> 纯文本，星标 <strong class="c-acc">★</strong> 两级级联'
-        : '横轴为 PC 4 核 CPU 分桶推理 20 条评论总耗时（对数刻度 ms）；<strong class="c-acc">★ Nano → Pro 级联</strong>位于 24–54 ms 极速区间，速度优于单跑 Lite';
+        : '横轴为 PC（Ryzen 5 5600X · 4 线程 --parallel-buckets）端到端分桶推理 20 条评论总耗时（p50 对数刻度 ms）；<strong class="c-acc">★ Nano → Pro 级联</strong>位于 23–54 ms 极速区间，10% 档快于单跑 Lite';
     }
 
     function renderTable() {
@@ -1062,7 +1062,7 @@
       const ySpan = Math.max(0.04, yMax - yMin);
 
       const isSize = xAxis === "size";
-      const minV = isSize ? 0.90 : 2.2;
+      const minV = isSize ? 0.90 : 1.5;
       const maxV = isSize ? (bench === "b1" ? 680 : 120) : 380;
       const minLog = Math.log10(minV), maxLog = Math.log10(maxV);
       const valXOf = (it) => isSize ? it.size : Math.min(340, it.m.ms);
@@ -1079,9 +1079,9 @@
         </defs>
       `];
 
-      const swX1 = xOf(isSize ? 1.0 : 2.5), swX2 = xOf(isSize ? 65 : 65);
+      const swX1 = xOf(isSize ? 1.0 : 1.65), swX2 = xOf(isSize ? 65 : 65);
       parts.push(`<rect x="${swX1.toFixed(1)}" y="${pad.t}" width="${(swX2 - swX1).toFixed(1)}" height="${(ph * 0.56).toFixed(1)}" rx="12" fill="url(#sweet-grad)" stroke="var(--success)" stroke-opacity="0.24" stroke-dasharray="5 4"/>`);
-      parts.push(`<text x="${(swX1 + 10).toFixed(1)}" y="${pad.t - 10}" fill="var(--success)" font-size="11.5" font-weight="700">${isSize ? "端侧轻量区间（1.22–49.5 MB · 纯 CPU 推理）" : "端侧实时响应区间（3.4–60 ms / 20 条整页）"}</text>`);
+      parts.push(`<text x="${(swX1 + 10).toFixed(1)}" y="${pad.t - 10}" fill="var(--success)" font-size="11.5" font-weight="700">${isSize ? "端侧轻量区间（1.22–49.5 MB · 纯 CPU 推理）" : "端侧实时响应区间（2.0–60 ms / 20 条整页）"}</text>`);
 
       const staticObstacles = [];
       if (isSize && bench === "b1") {
@@ -1103,10 +1103,10 @@
 
       const xTicks = isSize
         ? (bench === "b1" ? [1.22, 3, 7.05, 16.86, 50, 100, 200, 400] : [1.22, 2, 4, 7.05, 16.86, 30, 50, 80])
-        : [3.4, 10, 25, 40, 80, 150, 250];
+        : [2.0, 5, 10, 24.2, 52.4, 100, 161.3, 250];
       xTicks.forEach((xv) => {
         const x = xOf(xv);
-        const isTier = isSize ? (xv === 1.22 || xv === 7.05 || xv === 16.86 || xv === 50) : (xv === 3.4 || xv === 25 || xv === 40 || xv === 250);
+        const isTier = isSize ? (xv === 1.22 || xv === 7.05 || xv === 16.86 || xv === 50) : (xv === 2.0 || xv === 24.2 || xv === 52.4 || xv === 161.3);
         parts.push(`<line x1="${x.toFixed(1)}" y1="${pad.t}" x2="${x.toFixed(1)}" y2="${H - pad.b}" stroke="${isTier ? "var(--primary)" : "var(--border)"}" stroke-width="0.9" stroke-dasharray="3 3" opacity="${isTier ? 0.35 : 0.55}"/>`);
         const lbl = isSize
           ? (xv === 1.22 ? "1.22M" : (xv === 7.05 ? "7M" : (xv === 16.86 ? "17M" : xv + "M")))
@@ -1185,7 +1185,7 @@
         const cx = xOf(valXOf(it)), cy = yOf(it.m[yAxis]);
         const text = `${it.short} · ${fmtAxis(it.m[yAxis], yAxis)}`;
         const pillW = estTextWidth(text) + 16, pillH = 22;
-        const preferLeft = (isSize ? it.size > 40 : it.m.ms > 180);
+        const preferLeft = (isSize ? it.size > 40 : it.m.ms > 120);
         const candidates = preferLeft
           ? [[-14, 0, "end"], [-14, -23, "end"], [-14, 23, "end"], [0, -24, "middle"], [-24, -38, "end"], [-24, 38, "end"], [0, 26, "middle"], [-36, -56, "end"], [-36, 56, "end"]]
           : [[14, 0, "start"], [14, -22, "start"], [14, 22, "start"], [-14, 0, "end"], [-14, -22, "end"], [-14, 22, "end"], [0, -25, "middle"], [0, 27, "middle"], [22, -38, "start"], [22, 38, "start"], [-22, -38, "end"], [-22, 38, "end"], [34, -56, "start"], [34, 56, "start"], [-34, -56, "end"], [-34, 56, "end"], [14, -74, "start"], [14, 74, "start"]];
@@ -1336,15 +1336,15 @@
 
       const A_DATA = [
         { id:"oj_pro_fus", name:"OjinjinNet-Pro v1.2 (+1KB融合)", short:"Pro v1.2 融合", camp:"ours", track:"fusion", size:49.49, note:"纯CPU ONNX INT8", full:{ pr_auc:0.99363, r99:0.8323, r95:0.9677, f05:0.9717, stealth95:0.9375, hard_fpr95:0.0243, caught95:300, fp95:15 }, hard:{ pr_auc:0.97846, r99:0.7125, r95:0.9062, f05:0.9440, stealth95:0.9062, hard_fpr95:0.0113 } },
-        { id:"oj_cas15_fus", name:"Nano→Pro v1.2 级联 (L2D 15% + 融合)", short:"级联 L2D 15% 融合", camp:"cas", track:"fusion", size:50.71, note:"51.9ms · R@P95 97.4%", full:{ pr_auc:0.99265, r99:0.8548, r95:0.9742, f05:0.9658, stealth95:0.9500, hard_fpr95:0.0243, caught95:302, fp95:15 }, hard:{ pr_auc:0.97557, r99:0.7438, r95:0.8438, f05:0.9326, stealth95:0.8438, hard_fpr95:0.0113 } },
+        { id:"oj_cas15_fus", name:"Nano→Pro v1.2 级联 (L2D 15% + 融合)", short:"级联 L2D 15% 融合", camp:"cas", track:"fusion", size:50.71, note:"53.8ms · R@P95 97.4%", full:{ pr_auc:0.99265, r99:0.8548, r95:0.9742, f05:0.9658, stealth95:0.9500, hard_fpr95:0.0243, caught95:302, fp95:15 }, hard:{ pr_auc:0.97557, r99:0.7438, r95:0.8438, f05:0.9326, stealth95:0.8438, hard_fpr95:0.0113 } },
         { id:"oj_lite_fus", name:"OjinjinNet-Lite v1.2 (+1KB融合)", short:"Lite v1.2 融合", camp:"ours", track:"fusion", size:7.05, note:"纯CPU ONNX INT8", full:{ pr_auc:0.99366, r99:0.8871, r95:0.9581, f05:0.9705, stealth95:0.9187, hard_fpr95:0.0243, caught95:297, fp95:15 }, hard:{ pr_auc:0.97872, r99:0.7500, r95:0.8625, f05:0.9410, stealth95:0.8625, hard_fpr95:0.0113 } },
         { id:"oj_std_fus", name:"OjinjinNet-Standard v1.2 (+1KB融合)", short:"Std v1.2 融合", camp:"ours", track:"fusion", size:16.86, note:"纯CPU ONNX INT8", full:{ pr_auc:0.99301, r99:0.8710, r95:0.9645, f05:0.9679, stealth95:0.9313, hard_fpr95:0.0243, caught95:299, fp95:15 }, hard:{ pr_auc:0.97712, r99:0.7000, r95:0.8375, f05:0.9340, stealth95:0.8375, hard_fpr95:0.0113 } },
-        { id:"oj_nano_fus", name:"OjinjinNet-Nano v1.2 (1.22MB + 融合)", short:"Nano v1.2 融合", camp:"ours", track:"fusion", size:1.22, note:"3.4ms · Static INT8", full:{ pr_auc:0.98999, r99:0.8548, r95:0.9613, f05:0.9615, stealth95:0.9250, hard_fpr95:0.0243, caught95:298, fp95:15 }, hard:{ pr_auc:0.96676, r99:0.7125, r95:0.7688, f05:0.9239, stealth95:0.7688, hard_fpr95:0.0097 } },
+        { id:"oj_nano_fus", name:"OjinjinNet-Nano v1.2 (1.22MB + 融合)", short:"Nano v1.2 融合", camp:"ours", track:"fusion", size:1.22, note:"2.0ms · Static INT8", full:{ pr_auc:0.98999, r99:0.8548, r95:0.9613, f05:0.9615, stealth95:0.9250, hard_fpr95:0.0243, caught95:298, fp95:15 }, hard:{ pr_auc:0.96676, r99:0.7125, r95:0.7688, f05:0.9239, stealth95:0.7688, hard_fpr95:0.0097 } },
         { id:"oj_pro_txt", name:"OjinjinNet-Pro v1.2 (纯文本)", short:"Pro v1.2 纯文本", camp:"ours", track:"text", size:49.49, note:"纯CPU ONNX INT8", full:{ pr_auc:0.98416, r99:0.7774, r95:0.9419, f05:0.9674, stealth95:0.9313, hard_fpr95:0.0227, caught95:292, fp95:15 }, hard:{ pr_auc:0.96981, r99:0.3063, r95:0.8875, f05:0.9511, stealth95:0.8875, hard_fpr95:0.0113 } },
-        { id:"oj_cas15_txt", name:"Nano→Pro v1.2 级联 (L2D 15% 纯文本)", short:"级联 L2D 15% 纯文本", camp:"cas", track:"text", size:50.71, note:"51.9ms/页", full:{ pr_auc:0.97060, r99:0.4645, r95:0.9258, f05:0.9631, stealth95:0.9125, hard_fpr95:0.0211, caught95:287, fp95:15 }, hard:{ pr_auc:0.95268, r99:0.3312, r95:0.8875, f05:0.9443, stealth95:0.8875, hard_fpr95:0.0113 } },
+        { id:"oj_cas15_txt", name:"Nano→Pro v1.2 级联 (L2D 15% 纯文本)", short:"级联 L2D 15% 纯文本", camp:"cas", track:"text", size:50.71, note:"53.8ms/页", full:{ pr_auc:0.97060, r99:0.4645, r95:0.9258, f05:0.9631, stealth95:0.9125, hard_fpr95:0.0211, caught95:287, fp95:15 }, hard:{ pr_auc:0.95268, r99:0.3312, r95:0.8875, f05:0.9443, stealth95:0.8875, hard_fpr95:0.0113 } },
         { id:"oj_lite_txt", name:"OjinjinNet-Lite v1.2 (7MB 纯文本)", short:"Lite v1.2 纯文本", camp:"ours", track:"text", size:7.05, note:"4 教师蒸馏", full:{ pr_auc:0.97299, r99:0.6839, r95:0.9194, f05:0.9544, stealth95:0.8875, hard_fpr95:0.0130, caught95:285, fp95:15 }, hard:{ pr_auc:0.95370, r99:0.0437, r95:0.8875, f05:0.9392, stealth95:0.8875, hard_fpr95:0.0113 } },
         { id:"oj_std_txt", name:"OjinjinNet-Standard v1.2 (17MB 纯文本)", short:"Std v1.2 纯文本", camp:"ours", track:"text", size:16.86, note:"Dynamic INT8", full:{ pr_auc:0.97033, r99:0.4839, r95:0.8806, f05:0.9470, stealth95:0.8625, hard_fpr95:0.0194, caught95:273, fp95:14 }, hard:{ pr_auc:0.95043, r99:0.3125, r95:0.8063, f05:0.9265, stealth95:0.8063, hard_fpr95:0.0097 } },
-        { id:"oj_nano_txt", name:"OjinjinNet-Nano v1.2 (1.22MB 纯文本)", short:"Nano v1.2 纯文本", camp:"ours", track:"text", size:1.22, note:"3.4ms · 24,959/s", full:{ pr_auc:0.95606, r99:0.2613, r95:0.8677, f05:0.9353, stealth95:0.8438, hard_fpr95:0.0194, caught95:269, fp95:14 }, hard:{ pr_auc:0.92929, r99:0.1938, r95:0.6375, f05:0.9097, stealth95:0.6375, hard_fpr95:0.0081 } },
+        { id:"oj_nano_txt", name:"OjinjinNet-Nano v1.2 (1.22MB 纯文本)", short:"Nano v1.2 纯文本", camp:"ours", track:"text", size:1.22, note:"2.0ms · 22,483/s", full:{ pr_auc:0.95606, r99:0.2613, r95:0.8677, f05:0.9353, stealth95:0.8438, hard_fpr95:0.0194, caught95:269, fp95:14 }, hard:{ pr_auc:0.92929, r99:0.1938, r95:0.6375, f05:0.9097, stealth95:0.6375, hard_fpr95:0.0081 } },
 
         { id:"rule_c", name:"社区规则插件 C（三层加权评分 · 离线）", short:"插件 C", camp:"bili_js", track:"fusion", size:0.05, note:"默认≥60 / 疑似≥35", ootb:{ default_pred:{ prec:0.9219, rec:0.5710, f05:0.8210, obvious_rec:0.9800, stealth_rec:0.1875, hard_fpr:0.0243, tp:177, fp:15 }, strict_pred:{ prec:0.7760, rec:0.7710, f05:0.7750, obvious_rec:1.0000, stealth_rec:0.5563, hard_fpr:0.1118, tp:239, fp:69 } }, full:{ pr_auc:0.87637, r99:0.1774, r95:0.2968, f05:0.8403 }, hard:{ pr_auc:0.57119, r99:0.0, r95:0.0, f05:0.6069 } },
         { id:"rule_a", name:"社区规则插件 A（高星多规则评分 · 离线）", short:"插件 A", camp:"bili_js", track:"fusion", size:0.05, note:"默认≥60 / 疑似≥35", ootb:{ default_pred:{ prec:0.9136, rec:0.4774, f05:0.7724, obvious_rec:0.9733, stealth_rec:0.0125, hard_fpr:0.0227, tp:148, fp:14 }, strict_pred:{ prec:0.7826, rec:0.7548, f05:0.7769, obvious_rec:1.0000, stealth_rec:0.5250, hard_fpr:0.1053, tp:234, fp:65 } }, full:{ pr_auc:0.87716, r99:0.1839, r95:0.3258, f05:0.8375 }, hard:{ pr_auc:0.57002, r99:0.0, r95:0.0, f05:0.6059 } },
