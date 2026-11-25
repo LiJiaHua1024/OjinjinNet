@@ -13,6 +13,7 @@ import json
 import math
 import os
 import sys
+import threading
 import unicodedata
 from collections import OrderedDict
 from functools import lru_cache
@@ -77,6 +78,7 @@ class WordPieceTokenizer:
         self.cls_id = self.vocab.get("[CLS]", 101)
         self.sep_id = self.vocab.get("[SEP]", 102)
         self._wordpiece_cache: OrderedDict[str, list[int]] = OrderedDict()
+        self._wordpiece_cache_lock = threading.Lock()
         self._wordpiece_cache_limit = 8192
 
     def _basic_tokenize(self, text: str) -> list[str]:
@@ -134,15 +136,22 @@ class WordPieceTokenizer:
         return sub_ids
 
     def _wordpiece(self, token: str) -> list[int]:
-        cached = self._wordpiece_cache.get(token)
-        if cached is not None:
-            self._wordpiece_cache.move_to_end(token)
-            return cached
+        with self._wordpiece_cache_lock:
+            cached = self._wordpiece_cache.get(token)
+            if cached is not None:
+                self._wordpiece_cache.move_to_end(token)
+                return cached
+
         ids = self._wordpiece_uncached(token)
-        self._wordpiece_cache[token] = ids
-        if len(self._wordpiece_cache) > self._wordpiece_cache_limit:
-            self._wordpiece_cache.popitem(last=False)
-        return ids
+        with self._wordpiece_cache_lock:
+            cached = self._wordpiece_cache.get(token)
+            if cached is not None:
+                self._wordpiece_cache.move_to_end(token)
+                return cached
+            self._wordpiece_cache[token] = ids
+            if len(self._wordpiece_cache) > self._wordpiece_cache_limit:
+                self._wordpiece_cache.popitem(last=False)
+            return ids
 
     def _split_raw_token(self, raw: str) -> list[str]:
         word = _strip_accents(raw.lower())
