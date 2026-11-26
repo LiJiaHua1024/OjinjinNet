@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OjinjinNet v1.2.0 · 端侧中文 AI 评论检测评测看板</title>
+  <title>OjinjinNet v1.3.0 &amp; OjinjinRules v2.0 · 端侧中文 AI 评论检测评测看板</title>
   <style>
     :root {
       --background: #0f172a;
@@ -52,7 +52,12 @@
     .subcard { background: var(--background); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
     .header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; }
     .badge { display: inline-block; padding: 3px 9px; border-radius: 6px; font-size: 12px; font-weight: 700; background: var(--primary); color: var(--primary-foreground); }
-    .pill-v12 { display: inline-block; padding: 1px 6px; border-radius: 5px; font-size: 10px; font-weight: 700; background: var(--primary); color: var(--primary-foreground); }
+    .pill-v13 { display: inline-block; padding: 1px 6px; border-radius: 5px; font-size: 10px; font-weight: 700; background: var(--primary); color: var(--primary-foreground); }
+    .pill-rv2 { display: inline-block; padding: 1px 6px; border-radius: 5px; font-size: 10px; font-weight: 700; background: var(--success); color: #052e16; }
+    .pill-v12 { display: inline-block; padding: 1px 6px; border-radius: 5px; font-size: 10px; border: 1px solid var(--primary); color: var(--primary); }
+    .camp-rv2 { background: var(--success); color: #052e16; border-color: var(--success); }
+    .v3-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 960px) { .v3-grid { grid-template-columns: 1fr; } }
     .pill-cas { display: inline-block; padding: 1px 6px; border-radius: 5px; font-size: 10px; font-weight: 700; background: var(--accent); color: #ffffff; }
     .pill-v11 { display: inline-block; padding: 1px 6px; border-radius: 5px; font-size: 10px; border: 1px solid var(--border); color: var(--muted-foreground); }
     .pill-v10 { display: inline-block; padding: 1px 6px; border-radius: 5px; font-size: 10px; border: 1px solid var(--border); color: var(--muted-foreground); opacity: 0.78; }
@@ -194,7 +199,7 @@
         <button data-tab="overview" class="nav-tab">模型演进与双盲评测</button>
         <button data-tab="arena" class="nav-tab">公开方案横向评测（23 款基线对照）</button>
       </div>
-      <div class="muted">评测基准：<strong class="c-fg">OjinjinBench-v2 (1,476)</strong> &amp; <strong class="c-fg">OjinjinBench-v1 (1,310)</strong></div>
+      <div class="muted">评测基准：<strong class="c-fg">Bench-v3 Real (2,987) + Hard (1,434)</strong> · <strong class="c-fg">v2 (1,476)</strong> · <strong class="c-fg">v1 (1,310)</strong></div>
     </nav>
 
     <!-- ======================== TAB 1: OVERVIEW ======================== -->
@@ -203,29 +208,30 @@
       <header class="card header">
         <div>
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <span class="badge">OjinjinNet v1.2.0</span>
-            <span class="muted">第 2 轮委员会主动学习（AL-R2 · 1,354 条）+ 4 教师蒸馏；新增 1.22 MB Nano 与 Nano → Pro 两级级联</span>
+            <span class="badge">OjinjinNet v1.3.0</span>
+            <span class="badge" style="background:var(--success);color:#052e16;">OjinjinRules v2.0</span>
+            <span class="muted">AL-R3 反稀释全量重训 · 67,612 条 5 年龄段实证推荐流 · 29KB 纯 ES5 JS 至 49.5MB ONNX 全系覆盖</span>
           </div>
-          <h1>端侧中文 AI 评论检测评测看板</h1>
+          <h1>端侧中文 AI 评论检测评测看板（Bench-v3 实景双卷）</h1>
           <div class="muted">
-            覆盖晚 11 月时间外盲测卷 <strong class="c-fg">Bench-v2 (1,476 条)</strong> 与历史盲测卷 <strong class="c-fg">Bench-v1 (1,310 条)</strong>，附纯 CPU ONNX INT8 分桶耗时实测
+            封存全实景考卷 <strong class="c-fg">Bench-v3 Real (2,987)</strong> + 抗饱和考卷 <strong class="c-fg">Bench-v3 Hard (1,434)</strong>，同步保留 <strong class="c-fg">Bench-v2 (1,476)</strong> 与 <strong class="c-fg">Bench-v1 (1,310)</strong>
           </div>
         </div>
         <div class="kpis">
           <div class="kpi">
-            <div class="muted">Pro v1.2 · Bench-v2</div>
-            <div class="kpi-v c-suc">0.9072 / 0.9633</div>
-            <div class="muted">纯文本 / 融合 Best F0.5</div>
+            <div class="muted">Rules-v2 Pro · 43.8 KB JS</div>
+            <div class="kpi-v c-suc">100% / 93.4%</div>
+            <div class="muted">Real 0/2,881 误杀 · 0.072 ms/页</div>
           </div>
           <div class="kpi">
-            <div class="muted">Nano v1.2 · 1.22 MB</div>
-            <div class="kpi-v c-pri">2.0 ms / 22,483 /s</div>
-            <div class="muted">Bench-v2 纯文本 F0.5 0.8889</div>
+            <div class="muted">Nano→Pro v1.3 · L2D 10%</div>
+            <div class="kpi-v c-acc">3.4 ms (46×)</div>
+            <div class="muted">3.1% 转交 · Hard R@P95 89.2%</div>
           </div>
           <div class="kpi">
-            <div class="muted">Nano → Pro · 12% 转交</div>
-            <div class="kpi-v c-acc">31.9 ms (5.1×)</div>
-            <div class="muted">B2 Hard 0.9259 · 融合 R@P95 88.0%</div>
+            <div class="muted">v1.3 ONNX · Bench-v3</div>
+            <div class="kpi-v c-pri">0.9961 / 0.8891</div>
+            <div class="muted">Lite Real融合 / Pro Hard纯文 PR</div>
           </div>
         </div>
       </header>
@@ -234,25 +240,26 @@
         <div class="ctrl-stack" style="justify-content:space-between;">
           <div class="btn-group">
             <span class="muted fw-b">考卷：</span>
-            <button data-bench="b2" class="bench-btn">Bench-v2 晚11月新考卷 (1,476)</button>
-            <button data-bench="b1" class="bench-btn">Bench-v1 历史考卷 (1,310)</button>
+            <button data-bench="b3" class="bench-btn">Bench-v3 封存实景双卷 (2,987 / 1,434)</button>
+            <button data-bench="b2" class="bench-btn">Bench-v2 (1,476)</button>
+            <button data-bench="b1" class="bench-btn">Bench-v1 (1,310)</button>
           </div>
           <div class="btn-group">
             <span class="muted fw-b">切片：</span>
-            <button data-exam="full" class="exam-btn">完整集</button>
-            <button data-exam="hard" class="exam-btn">Hard-Only 子集</button>
+            <button data-exam="full" class="exam-btn" id="btn-exam-full">Real 真实混合 / 完整集</button>
+            <button data-exam="hard" class="exam-btn" id="btn-exam-hard">Hard 抗饱和 / 高难子集</button>
           </div>
           <div class="btn-group">
             <span class="muted fw-b">赛道：</span>
             <button data-track="all" class="track-btn">全部</button>
-            <button data-track="fusion" class="track-btn">端到端 (+1KB 融合)</button>
+            <button data-track="fusion" class="track-btn">评论原生 / +融合</button>
             <button data-track="text" class="track-btn">仅纯文本</button>
           </div>
           <div class="btn-group">
             <span class="muted fw-b">版本：</span>
-            <button data-ver="compare" class="ver-btn">v1.2 与 v1.1 对照</button>
-            <button data-ver="v12" class="ver-btn">仅看 v1.2</button>
-            <button data-ver="all" class="ver-btn">含 v1.0 历史</button>
+            <button data-ver="v13" class="ver-btn">v1.3 + Rules v2.0</button>
+            <button data-ver="compare" class="ver-btn">v1.3 与 v1.2 对照</button>
+            <button data-ver="all" class="ver-btn">全部历史版本</button>
           </div>
         </div>
 
@@ -298,11 +305,11 @@
           <div class="legend-items">
             <span class="legend-item">
               <svg width="12" height="12" viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="var(--success)"/></svg>
-              v1.2 端到端 (+1KB 融合)
+              v1.3 / Rules v2 综合 (+融合/原生)
             </span>
             <span class="legend-item">
               <svg width="12" height="12" viewBox="0 0 12 12"><polygon points="6,1 11,6 6,11 1,6" fill="var(--primary)"/></svg>
-              v1.2 纯文本
+              v1.3 / Rules v2 纯文本
             </span>
             <span class="legend-item">
               <svg width="12" height="12" viewBox="0 0 12 12"><polygon points="6,0.5 7.7,4.2 11.5,4.6 8.6,7.3 9.4,11.2 6,9.2 2.6,11.2 3.4,7.3 0.5,4.6 4.3,4.2" fill="var(--accent)"/></svg>
@@ -310,7 +317,7 @@
             </span>
             <span class="legend-item">
               <svg width="12" height="12" viewBox="0 0 12 12"><circle cx="6" cy="6" r="4" fill="none" stroke="var(--muted-foreground)" stroke-width="2"/></svg>
-              历史版本对照（v1.1 / v1.0）
+              历史版本对照（v1.2 / v1.1 / v1.0）
             </span>
           </div>
           <span>悬停查看详情 · 点击数据点或表格行联动右侧明细面板</span>
@@ -367,9 +374,42 @@
         </section>
       </div>
 
+      <section id="v3-showcase" class="v3-grid">
+        <div class="card">
+          <div class="row">
+            <div>
+              <h2>5 个视频发布年龄段实测（Bench-v3 Real · 防老视频误杀检验）</h2>
+              <div class="muted" style="margin-top:2px;">覆盖 ≤14 天新视频至 &gt;1 年老视频；Rules-v2 Pro 在全部 5 档均保持 0 误杀 (0/2,881)</div>
+            </div>
+            <div class="btn-group">
+              <button data-agemode="recall" class="age-btn">AI 召回率 (100%顶格)</button>
+              <button data-agemode="fpr" class="age-btn">真人误杀率 FPR (0%贴底)</button>
+            </div>
+          </div>
+          <div class="pareto-box">
+            <svg id="v3-age-svg" viewBox="0 0 600 320"></svg>
+            <div id="v3-age-tip" class="float-tip"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="row">
+            <div>
+              <h2>Bench-v3 Real 开箱实测：高难真人误杀 vs 召回率</h2>
+              <div class="muted" style="margin-top:2px;">全部方案采用出厂默认/平衡档（0 看题调参）；0% 误杀贴齐左轴，100% 召回顶格</div>
+            </div>
+            <span class="badge" style="background:var(--success);color:#052e16;">Rules-v2 Pro · 0 FP</span>
+          </div>
+          <div class="pareto-box">
+            <svg id="v3-oob-svg" viewBox="0 0 600 320"></svg>
+            <div id="v3-oob-tip" class="float-tip"></div>
+          </div>
+        </div>
+      </section>
+
       <section class="card">
         <div style="border-bottom:1px solid var(--border);padding-bottom:10px;">
-          <h2>指标定义与双考卷口径说明</h2>
+          <h2>指标定义与三考卷口径说明</h2>
           <div id="guide-sub" class="muted" style="margin-top:3px;">评论过滤属于静默隐藏场景，错判真人长评的代价高于漏放 AI 评论。除「难负真人误杀率」「整页耗时」「模型体积」越低越好外，其余指标均为越高越好。</div>
         </div>
 
@@ -421,9 +461,9 @@
         <div>
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
             <span class="badge">横向评测 · 23 款公开基线对照</span>
-            <span class="muted">OjinjinNet v1.2.0 全系（含 1.22 MB Nano 与级联）vs 8 款 HF 开源模型 + 冻结 BGE 向量 + Qwen 0.5B/0.6B + 12 款社区规则插件</span>
+            <span class="muted">OjinjinNet v1.3.0 + OjinjinRules v2.0 (29–44KB JS) vs 8 款 HF 开源模型 + 冻结 BGE 向量 + Qwen 0.5B/0.6B + 12 款社区规则插件</span>
           </div>
-          <h1>OjinjinNet v1.2.0 与公开基线同集评测</h1>
+          <h1>OjinjinNet v1.3.0 &amp; Rules v2.0 与公开基线同集评测</h1>
           <div class="muted">
             全部方案均在冻结的 <strong class="c-fg">OjinjinBench-v1 完整集 (1,310 条)</strong> 与 <strong class="c-fg">Hard-Only 子集 (777 条)</strong> 上按原版实现评测
           </div>
@@ -526,7 +566,7 @@
         <div class="tbl-toolbar">
           <div class="row">
             <div>
-              <h2>3. 全部公开方案与 OjinjinNet v1.2 实测明细表（点击表头排序）</h2>
+              <h2>3. 全部公开方案与 OjinjinNet v1.3 / Rules v2.0 实测明细表（点击表头排序）</h2>
               <div id="a-exam-desc" class="muted" style="margin-top:2px;"></div>
             </div>
             <span id="a-row-count" class="muted"></span>
@@ -624,6 +664,7 @@
       teacher:  { pcPage: "离线 GPU", pcB1: "离线参考", qps: "离线参考",   mobile: "离线参考",          mem: ">600 MB" },
       rules:    { pcPage: "<0.2 ms", pcB1: "<0.02 ms",qps: ">10万条/秒",   mobile: "<1 ms",             mem: "0 MB" },
     };
+    Object.assign(HW_SPECS, {"rules_v2_lite": {"pcPage": "0.061 ms (isAi 0.048)", "pcB1": "3.04 µs", "qps": "328,700+ 条/秒 (V8)", "mobile": "<0.3 ms (纯ES5)", "mem": "29.1 KB (9.9K gz)"}, "rules_v2_compact": {"pcPage": "0.071 ms", "pcB1": "3.55 µs", "qps": "281,400+ 条/秒 (V8)", "mobile": "<0.4 ms (纯ES5)", "mem": "38.6 KB (13.4K gz)"}, "rules_v2_pro": {"pcPage": "0.072 ms", "pcB1": "3.59 µs", "qps": "278,700+ 条/秒 (V8)", "mobile": "<0.4 ms (纯ES5)", "mem": "43.8 KB (15.6K gz)"}, "nano_v13": {"pcPage": "1.89 ms (串行 3.21)", "pcB1": "0.29 ms", "qps": "18,255 条/秒", "mobile": "静态 QDQ INT8", "mem": "1.22 MB"}, "lite_v13": {"pcPage": "24.3 ms (串行 33.7)", "pcB1": "1.74 ms", "qps": "1,510 条/秒", "mobile": "~56 ms (4核865)", "mem": "7.05 MB"}, "standard_v13": {"pcPage": "52.8 ms (串行 68.5)", "pcB1": "3.32 ms", "qps": "716 条/秒", "mobile": "~106 ms (4核865)", "mem": "16.86 MB"}, "pro_v13": {"pcPage": "157.4 ms (串行 207.2)", "pcB1": "8.30 ms", "qps": "235 条/秒", "mobile": "~314 ms (4核865)", "mem": "49.49 MB"}, "cas13_l2d_10": {"pcPage": "3.4 ms (均值 8.8)", "pcB1": "0.29 / 8.30 ms", "qps": "B3实测仅 3.1% 转交", "mobile": "46.3× 提速 (vs Pro)", "mem": "1.22 + 49.5 MB"}, "cas13_naive_15": {"pcPage": "10.7 ms (均值 12.5)", "pcB1": "0.29 / 8.30 ms", "qps": "B3实测仅 5.5% 转交", "mobile": "14.7× 提速 (vs Pro)", "mem": "1.22 + 49.5 MB"}, "cas13_l2d_15": {"pcPage": "11.4 ms (均值 12.6)", "pcB1": "0.29 / 8.30 ms", "qps": "B3实测仅 5.1% 转交", "mobile": "13.8× 提速 (vs Pro)", "mem": "1.22 + 49.5 MB"}});
 
     const MODELS = [
       // ---- v1.2 Single Models ----
@@ -668,7 +709,7 @@
         }
       },
 
-      { id: "pro_v12_txt", tier: "pro", hw: "pro", ver: "v12", track: "text", pairPrev: "pro_v11_txt", name: "Pro v1.2 (MacBERT-6L 纯文本)", short: "Pro v1.2 纯文本", badge: "纯文本最高", size: 49.49, ms: { b1: 161.3, b2: 161.3 },
+      { id: "pro_v12_txt", tier: "pro", hw: "pro", ver: "v12", track: "text", pairPrev: "pro_v11_txt", name: "Pro v1.2 (MacBERT-6L 纯文本)", short: "Pro v1.3 / Rules v2 纯文本", badge: "纯文本最高", size: 49.49, ms: { b1: 161.3, b2: 161.3 },
         b2: {
           full: { pr_auc: 0.90513, r99: 0.4098, r95: 0.7049, f05: 0.9072, f1: 0.8496, stealth95: 0.5397, hard_fpr95: 0.0043, caught99: 25, fp99: 0, caught95: 43, fp95: 1 },
           hard: { pr_auc: 0.95013, r99: 0.6939, r95: 0.7959, f05: 0.9189, f1: 0.8776, stealth95: 0.6190, hard_fpr95: 0.0086, caught99: 34, fp99: 0, caught95: 39, fp95: 2 }
@@ -678,7 +719,7 @@
           hard: { pr_auc: 0.96981, r99: 0.3063, r95: 0.8875, f05: 0.9511, f1: 0.9255, stealth95: 0.8875, hard_fpr95: 0.0113, caught99: 49, fp99: 0, caught95: 142, fp95: 7 }
         }
       },
-      { id: "nano_v12_txt", tier: "nano", hw: "nano", ver: "v12", track: "text", name: "Nano v1.2 (1.22MB 纯文本)", short: "Nano v1.2 纯文本", badge: "2.0 ms / 页", size: 1.22, ms: { b1: 2.0, b2: 2.0 },
+      { id: "nano_v12_txt", tier: "nano", hw: "nano", ver: "v12", track: "text", name: "Nano v1.2 (1.22MB 纯文本)", short: "Nano v1.3 / Rules v2 纯文本", badge: "2.0 ms / 页", size: 1.22, ms: { b1: 2.0, b2: 2.0 },
         b2: {
           full: { pr_auc: 0.88175, r99: 0.3770, r95: 0.6557, f05: 0.8889, f1: 0.8319, stealth95: 0.5238, hard_fpr95: 0.0000, caught99: 23, fp99: 0, caught95: 40, fp95: 2 },
           hard: { pr_auc: 0.94039, r99: 0.6735, r95: 0.7959, f05: 0.9155, f1: 0.8667, stealth95: 0.6190, hard_fpr95: 0.0086, caught99: 32, fp99: 0, caught95: 39, fp95: 2 }
@@ -688,7 +729,7 @@
           hard: { pr_auc: 0.92929, r99: 0.1938, r95: 0.6375, f05: 0.9097, f1: 0.8831, stealth95: 0.6375, hard_fpr95: 0.0081, caught99: 31, fp99: 0, caught95: 102, fp95: 5 }
         }
       },
-      { id: "std_v12_txt", tier: "std", hw: "std", ver: "v12", track: "text", pairPrev: "std_v11_txt", name: "Standard v1.2 (BGE 纯文本)", short: "Std v1.2 纯文本", badge: "17 MB 纯文本", size: 16.86, ms: { b1: 52.4, b2: 52.4 },
+      { id: "std_v12_txt", tier: "std", hw: "std", ver: "v12", track: "text", pairPrev: "std_v11_txt", name: "Standard v1.2 (BGE 纯文本)", short: "Std v1.3 / Rules v2 纯文本", badge: "17 MB 纯文本", size: 16.86, ms: { b1: 52.4, b2: 52.4 },
         b2: {
           full: { pr_auc: 0.85195, r99: 0.0328, r95: 0.5574, f05: 0.8515, f1: 0.8305, stealth95: 0.4603, hard_fpr95: 0.0043, caught99: 2, fp99: 0, caught95: 34, fp95: 1 },
           hard: { pr_auc: 0.89106, r99: 0.0408, r95: 0.5918, f05: 0.8861, f1: 0.8750, stealth95: 0.4603, hard_fpr95: 0.0043, caught99: 2, fp99: 0, caught95: 28, fp95: 1 }
@@ -698,7 +739,7 @@
           hard: { pr_auc: 0.95043, r99: 0.3125, r95: 0.8063, f05: 0.9265, f1: 0.8903, stealth95: 0.8063, hard_fpr95: 0.0097, caught99: 50, fp99: 0, caught95: 129, fp95: 6 }
         }
       },
-      { id: "lite_v12_txt", tier: "lite", hw: "lite", ver: "v12", track: "text", pairPrev: "lite_v11_txt", name: "Lite v1.2 (MiniRBT KD 纯文本)", short: "Lite v1.2 纯文本", badge: "B1 +0.0128", size: 7.05, ms: { b1: 24.2, b2: 24.2 },
+      { id: "lite_v12_txt", tier: "lite", hw: "lite", ver: "v12", track: "text", pairPrev: "lite_v11_txt", name: "Lite v1.2 (MiniRBT KD 纯文本)", short: "Lite v1.3 / Rules v2 纯文本", badge: "B1 +0.0128", size: 7.05, ms: { b1: 24.2, b2: 24.2 },
         b2: {
           full: { pr_auc: 0.85095, r99: 0.3279, r95: 0.3934, f05: 0.8429, f1: 0.8000, stealth95: 0.3333, hard_fpr95: 0.0000, caught99: 19, fp99: 0, caught95: 24, fp95: 1 },
           hard: { pr_auc: 0.93095, r99: 0.4286, r95: 0.5306, f05: 0.8955, f1: 0.8824, stealth95: 0.4127, hard_fpr95: 0.0043, caught99: 21, fp99: 0, caught95: 26, fp95: 1 }
@@ -880,7 +921,11 @@
       },
     ];
 
-    let bench = "b2", exam = "full", track = "all", verMode = "compare", xAxis = "size", yAxis = "f05", sortKey = "f05", sortAsc = false, selectedId = "pro_v12_fus";
+    const V12_B3_PATCH = {"pro_v12_fus": {"full": {"pr_auc": 0.993, "r99": 0.8585, "r95": 0.9811, "f05": 0.9761, "f1": 0.972, "stealth95": 0.973, "hard_fpr95": 0.00326, "caught99": 91, "fp99": 0, "caught95": 104, "fp95": 4}, "hard": {"pr_auc": 0.9683, "r99": 0.5654, "r95": 0.8972, "f05": 0.9455, "f1": 0.9253, "stealth95": 0.8994, "hard_fpr95": 0.0203, "caught99": 121, "fp99": 0, "caught95": 192, "fp95": 9}}, "lite_v12_fus": {"full": {"pr_auc": 0.9942, "r99": 0.783, "r95": 0.9906, "f05": 0.9758, "f1": 0.9813, "stealth95": 0.9865, "hard_fpr95": 0.00651, "caught99": 83, "fp99": 0, "caught95": 105, "fp95": 4}, "hard": {"pr_auc": 0.9589, "r99": 0.6402, "r95": 0.771, "f05": 0.9169, "f1": 0.8956, "stealth95": 0.8994, "hard_fpr95": 0.03299, "caught99": 137, "fp99": 0, "caught95": 165, "fp95": 9}}, "std_v12_fus": {"full": {"pr_auc": 0.9897, "r99": 0.6981, "r95": 0.9717, "f05": 0.9684, "f1": 0.9626, "stealth95": 0.9595, "hard_fpr95": 0.00326, "caught99": 74, "fp99": 0, "caught95": 103, "fp95": 4}, "hard": {"pr_auc": 0.9373, "r99": 0.4439, "r95": 0.6262, "f05": 0.8932, "f1": 0.8822, "stealth95": 0.8931, "hard_fpr95": 0.03807, "caught99": 95, "fp99": 0, "caught95": 134, "fp95": 9}}, "nano_v12_fus": {"full": {"pr_auc": 0.9893, "r99": 0.566, "r95": 0.9717, "f05": 0.9717, "f1": 0.9717, "stealth95": 0.9595, "hard_fpr95": 0.00651, "caught99": 60, "fp99": 0, "caught95": 103, "fp95": 4}, "hard": {"pr_auc": 0.9438, "r99": 0.5841, "r95": 0.729, "f05": 0.9018, "f1": 0.8899, "stealth95": 0.8679, "hard_fpr95": 0.02284, "caught99": 125, "fp99": 0, "caught95": 156, "fp95": 9}}, "pro_v12_txt": {"full": {"pr_auc": 0.9337, "r99": 0.6413, "r95": 0.7826, "f05": 0.9342, "f1": 0.8778, "stealth95": 0.7826, "hard_fpr95": 0.005, "caught99": 59, "fp99": 0, "caught95": 72, "fp95": 4}, "hard": {"pr_auc": 0.8673, "r99": 0.271, "r95": 0.5032, "f05": 0.8571, "f1": 0.8312, "stealth95": 0.5032, "hard_fpr95": 0.005, "caught99": 42, "fp99": 0, "caught95": 78, "fp95": 9}}, "lite_v12_txt": {"full": {"pr_auc": 0.9216, "r99": 0.5326, "r95": 0.75, "f05": 0.9176, "f1": 0.8663, "stealth95": 0.75, "hard_fpr95": 0.005, "caught99": 49, "fp99": 0, "caught95": 69, "fp95": 4}, "hard": {"pr_auc": 0.8132, "r99": 0.2323, "r95": 0.4194, "f05": 0.7828, "f1": 0.7625, "stealth95": 0.4194, "hard_fpr95": 0.005, "caught99": 36, "fp99": 0, "caught95": 65, "fp95": 9}}, "std_v12_txt": {"full": {"pr_auc": 0.9059, "r99": 0.5435, "r95": 0.663, "f05": 0.8764, "f1": 0.8454, "stealth95": 0.663, "hard_fpr95": 0.005, "caught99": 50, "fp99": 0, "caught95": 61, "fp95": 4}, "hard": {"pr_auc": 0.707, "r99": 0.0065, "r95": 0.0065, "f05": 0.7121, "f1": 0.6909, "stealth95": 0.0065, "hard_fpr95": 0.005, "caught99": 1, "fp99": 0, "caught95": 1, "fp95": 9}}, "nano_v12_txt": {"full": {"pr_auc": 0.8955, "r99": 0.5109, "r95": 0.6196, "f05": 0.875, "f1": 0.8619, "stealth95": 0.6196, "hard_fpr95": 0.005, "caught99": 47, "fp99": 0, "caught95": 57, "fp95": 4}, "hard": {"pr_auc": 0.7459, "r99": 0.2194, "r95": 0.2452, "f05": 0.7715, "f1": 0.6966, "stealth95": 0.2452, "hard_fpr95": 0.005, "caught99": 34, "fp99": 0, "caught95": 38, "fp95": 9}}};
+    MODELS.forEach((m) => { if (V12_B3_PATCH[m.id]) { m.b3 = V12_B3_PATCH[m.id]; m.ms.b3 = m.ms.b2; } });
+    MODELS.unshift(...[{"id": "rules_v2_pro_rep", "tier": "rules_v2", "hw": "rules_v2_pro", "ver": "rules_v2", "track": "fusion", "name": "OjinjinRules v2.0 Pro (43.8KB ES5 JS) · 评论原生", "short": "Rules-v2 Pro 原生", "badge": "Real 0误杀 · 93.4%召回", "size": 0.0427, "sizeLabel": "43.8 KB", "ms": {"b3": 0.072, "b2": 0.072, "b1": 0.072}, "b3": {"full": {"pr_auc": 0.99147, "roc_auc": 0.99961, "f05": 0.9861, "f1": 0.9659, "r95": 0.9623, "r99": 0.934, "stealth95": 0.9595, "hard_fpr95": 0.00651, "caught95": 102, "fp95": 5, "caught99": 99, "fp99": 1}, "hard": {"pr_auc": 0.96043, "roc_auc": 0.98948, "f05": 0.9263, "f1": 0.9133, "r95": 0.8318, "r99": 0.5, "stealth95": 0.8302, "hard_fpr95": 0.01523, "caught95": 177, "fp95": 9, "caught99": 105, "fp99": 1}}, "b2": {"full": {"pr_auc": 0.97648, "roc_auc": 0.99829, "f05": 0.9504, "f1": 0.9388, "r95": 0.92, "r99": 0.7733, "stealth95": 0.9206, "hard_fpr95": 0.0, "caught95": 69, "fp95": 3, "caught99": 58, "fp99": 0}, "hard": {"pr_auc": 0.99546, "roc_auc": 0.99863, "f05": 0.9866, "f1": 0.9764, "r95": 0.9841, "r99": 0.9365, "stealth95": 0.9841, "hard_fpr95": 0.01293, "caught95": 62, "fp95": 3, "caught99": 58, "fp99": 0}}, "b1": {"full": {"pr_auc": 0.98698, "roc_auc": 0.99693, "f05": 0.9682, "f1": 0.9665, "r95": 0.9774, "r99": 0.8581, "stealth95": 0.9719, "hard_fpr95": 0.01391, "caught95": 303, "fp95": 14, "caught99": 266, "fp99": 2}, "hard": {"pr_auc": 0.96522, "roc_auc": 0.99279, "f05": 0.9375, "f1": 0.9358, "r95": 0.8688, "r99": 0.0, "stealth95": 0.8621, "hard_fpr95": 0.00504, "caught95": 138, "fp95": 7, "caught99": 0, "fp99": 0}}}, {"id": "rules_v2_pro_txt", "tier": "rules_v2", "hw": "rules_v2_pro", "ver": "rules_v2", "track": "text", "name": "OjinjinRules v2.0 Pro (43.8KB ES5 JS) · 纯文本", "short": "Rules-v2 Pro 纯文本", "badge": "43.8 KB 纯文本", "size": 0.0427, "sizeLabel": "43.8 KB", "ms": {"b3": 0.057, "b2": 0.057, "b1": 0.057}, "b3": {"full": {"pr_auc": 0.92782, "roc_auc": 0.99149, "f05": 0.9245, "f1": 0.8721, "r95": 0.7717, "r99": 0.6848, "stealth95": 0.8167, "hard_fpr95": 0.00326, "caught95": 71, "fp95": 2, "caught99": 62, "fp99": 0}, "hard": {"pr_auc": 0.82623, "roc_auc": 0.94443, "f05": 0.8522, "f1": 0.7653, "r95": 0.5032, "r99": 0.2129, "stealth95": 0.4949, "hard_fpr95": 0.00254, "caught95": 78, "fp95": 4, "caught99": 29, "fp99": 0}}, "b2": {"full": {"pr_auc": 0.89985, "roc_auc": 0.98222, "f05": 0.8893, "f1": 0.8667, "r95": 0.6885, "r99": 0.5902, "stealth95": 0.6735, "hard_fpr95": 0.0, "caught95": 41, "fp95": 2, "caught99": 36, "fp99": 0}, "hard": {"pr_auc": 0.95811, "roc_auc": 0.98274, "f05": 0.9556, "f1": 0.9263, "r95": 0.898, "r99": 0.7551, "stealth95": 0.8776, "hard_fpr95": 0.0, "caught95": 43, "fp95": 2, "caught99": 37, "fp99": 0}}, "b1": {"full": {"pr_auc": 0.96361, "roc_auc": 0.98932, "f05": 0.9307, "f1": 0.9163, "r95": 0.8355, "r99": 0.6419, "stealth95": 0.8258, "hard_fpr95": 0.017, "caught95": 258, "fp95": 13, "caught99": 199, "fp99": 2}, "hard": {"pr_auc": 0.93789, "roc_auc": 0.98538, "f05": 0.9006, "f1": 0.8896, "r95": 0.7375, "r99": 0.0, "stealth95": 0.7328, "hard_fpr95": 0.01008, "caught95": 117, "fp95": 6, "caught99": 0, "fp99": 0}}}, {"id": "rules_v2_lite_rep", "tier": "rules_v2", "hw": "rules_v2_lite", "ver": "rules_v2", "track": "fusion", "name": "OjinjinRules v2.0 Lite (29.1KB 0树 JS) · 评论原生", "short": "Rules-v2 Lite 原生", "badge": "29KB · 0.048ms · 0树", "size": 0.0284, "sizeLabel": "29.1 KB", "ms": {"b3": 0.061, "b2": 0.061, "b1": 0.061}, "b3": {"full": {"pr_auc": 0.98745, "roc_auc": 0.99941, "f05": 0.9684, "f1": 0.9524, "r95": 0.9434, "r99": 0.8208, "stealth95": 0.9324, "hard_fpr95": 0.00326, "caught95": 100, "fp95": 4, "caught99": 86, "fp99": 0}, "hard": {"pr_auc": 0.96791, "roc_auc": 0.99062, "f05": 0.9497, "f1": 0.9158, "r95": 0.8645, "r99": 0.6822, "stealth95": 0.8679, "hard_fpr95": 0.00508, "caught95": 185, "fp95": 8, "caught99": 146, "fp99": 1}}, "b2": {"full": {"pr_auc": 0.98071, "roc_auc": 0.99877, "f05": 0.9552, "f1": 0.9281, "r95": 0.88, "r99": 0.76, "stealth95": 0.873, "hard_fpr95": 0.0, "caught95": 66, "fp95": 3, "caught99": 57, "fp99": 0}, "hard": {"pr_auc": 0.99751, "roc_auc": 0.99925, "f05": 0.9901, "f1": 0.9841, "r95": 0.9841, "r99": 0.9524, "stealth95": 0.9841, "hard_fpr95": 0.01293, "caught95": 62, "fp95": 3, "caught99": 59, "fp99": 0}}, "b1": {"full": {"pr_auc": 0.99091, "roc_auc": 0.99723, "f05": 0.968, "f1": 0.9645, "r95": 0.971, "r99": 0.7613, "stealth95": 0.9607, "hard_fpr95": 0.01236, "caught95": 300, "fp95": 15, "caught99": 236, "fp99": 2}, "hard": {"pr_auc": 0.96908, "roc_auc": 0.99255, "f05": 0.9375, "f1": 0.9313, "r95": 0.8812, "r99": 0.3812, "stealth95": 0.8879, "hard_fpr95": 0.00336, "caught95": 140, "fp95": 7, "caught99": 61, "fp99": 0}}}, {"id": "rules_v2_lite_txt", "tier": "rules_v2", "hw": "rules_v2_lite", "ver": "rules_v2", "track": "text", "name": "OjinjinRules v2.0 Lite (29.1KB 0树 JS) · 纯文本", "short": "Rules-v2 Lite 纯文本", "badge": "29.1 KB 纯文本", "size": 0.0284, "sizeLabel": "29.1 KB", "ms": {"b3": 0.051, "b2": 0.051, "b1": 0.051}, "b3": {"full": {"pr_auc": 0.90562, "roc_auc": 0.98726, "f05": 0.927, "f1": 0.8354, "r95": 0.7174, "r99": 0.7174, "stealth95": 0.7333, "hard_fpr95": 0.00651, "caught95": 66, "fp95": 2, "caught99": 66, "fp99": 0}, "hard": {"pr_auc": 0.79343, "roc_auc": 0.9188, "f05": 0.8182, "f1": 0.7388, "r95": 0.5226, "r99": 0.4129, "stealth95": 0.5152, "hard_fpr95": 0.00254, "caught95": 81, "fp95": 4, "caught99": 63, "fp99": 0}}, "b2": {"full": {"pr_auc": 0.8622, "roc_auc": 0.98237, "f05": 0.8921, "f1": 0.8182, "r95": 0.7049, "r99": 0.4426, "stealth95": 0.7347, "hard_fpr95": 0.0, "caught95": 43, "fp95": 2, "caught99": 26, "fp99": 0}, "hard": {"pr_auc": 0.92702, "roc_auc": 0.9747, "f05": 0.9326, "f1": 0.8636, "r95": 0.7755, "r99": 0.7347, "stealth95": 0.7755, "hard_fpr95": 0.00431, "caught95": 38, "fp95": 1, "caught99": 36, "fp99": 0}}, "b1": {"full": {"pr_auc": 0.95851, "roc_auc": 0.9837, "f05": 0.9228, "f1": 0.8956, "r95": 0.8097, "r99": 0.4677, "stealth95": 0.7809, "hard_fpr95": 0.01546, "caught95": 250, "fp95": 13, "caught99": 144, "fp99": 1}, "hard": {"pr_auc": 0.92791, "roc_auc": 0.97515, "f05": 0.8953, "f1": 0.8487, "r95": 0.6687, "r99": 0.3563, "stealth95": 0.6552, "hard_fpr95": 0.0084, "caught95": 106, "fp95": 5, "caught99": 57, "fp99": 0}}}, {"id": "rules_v2_compact_rep", "tier": "rules_v2", "hw": "rules_v2_compact", "ver": "rules_v2", "track": "fusion", "name": "OjinjinRules v2.0 Compact (38.6KB JS) · 评论原生", "short": "Rules-v2 Compact 原生", "badge": "全卷 0% HH-FPR", "size": 0.0377, "sizeLabel": "38.6 KB", "ms": {"b3": 0.071, "b2": 0.071, "b1": 0.071}, "b3": {"full": {"pr_auc": 0.98289, "roc_auc": 0.99904, "f05": 0.9739, "f1": 0.9573, "r95": 0.9528, "r99": 0.6698, "stealth95": 0.9459, "hard_fpr95": 0.00651, "caught95": 101, "fp95": 5, "caught99": 71, "fp99": 0}, "hard": {"pr_auc": 0.95924, "roc_auc": 0.98821, "f05": 0.9313, "f1": 0.9133, "r95": 0.8364, "r99": 0.6869, "stealth95": 0.8365, "hard_fpr95": 0.00508, "caught95": 178, "fp95": 9, "caught99": 147, "fp99": 1}}, "b2": {"full": {"pr_auc": 0.97848, "roc_auc": 0.99847, "f05": 0.9577, "f1": 0.9379, "r95": 0.9067, "r99": 0.76, "stealth95": 0.9048, "hard_fpr95": 0.0, "caught95": 68, "fp95": 3, "caught99": 56, "fp99": 0}, "hard": {"pr_auc": 0.99602, "roc_auc": 0.9988, "f05": 0.9866, "f1": 0.9764, "r95": 0.9841, "r99": 0.9365, "stealth95": 0.9841, "hard_fpr95": 0.00862, "caught95": 62, "fp95": 2, "caught99": 57, "fp99": 0}}, "b1": {"full": {"pr_auc": 0.98906, "roc_auc": 0.99683, "f05": 0.9679, "f1": 0.9619, "r95": 0.9581, "r99": 0.7742, "stealth95": 0.9494, "hard_fpr95": 0.01236, "caught95": 297, "fp95": 15, "caught99": 240, "fp99": 2}, "hard": {"pr_auc": 0.96691, "roc_auc": 0.99248, "f05": 0.9426, "f1": 0.9358, "r95": 0.875, "r99": 0.225, "stealth95": 0.8793, "hard_fpr95": 0.00504, "caught95": 140, "fp95": 7, "caught99": 36, "fp99": 0}}}, {"id": "rules_v2_compact_txt", "tier": "rules_v2", "hw": "rules_v2_compact", "ver": "rules_v2", "track": "text", "name": "OjinjinRules v2.0 Compact (38.6KB JS) · 纯文本", "short": "Rules-v2 Compact 纯文本", "badge": "38.6 KB 纯文本", "size": 0.0377, "sizeLabel": "38.6 KB", "ms": {"b3": 0.053, "b2": 0.053, "b1": 0.053}, "b3": {"full": {"pr_auc": 0.90744, "roc_auc": 0.98848, "f05": 0.9157, "f1": 0.8306, "r95": 0.7174, "r99": 0.6848, "stealth95": 0.7333, "hard_fpr95": 0.00651, "caught95": 66, "fp95": 3, "caught99": 63, "fp99": 0}, "hard": {"pr_auc": 0.79935, "roc_auc": 0.92215, "f05": 0.8406, "f1": 0.7473, "r95": 0.5484, "r99": 0.4129, "stealth95": 0.5455, "hard_fpr95": 0.00509, "caught95": 85, "fp95": 4, "caught99": 64, "fp99": 0}}, "b2": {"full": {"pr_auc": 0.86491, "roc_auc": 0.98097, "f05": 0.8893, "f1": 0.8257, "r95": 0.6721, "r99": 0.3934, "stealth95": 0.6939, "hard_fpr95": 0.0, "caught95": 41, "fp95": 2, "caught99": 23, "fp99": 0}, "hard": {"pr_auc": 0.93107, "roc_auc": 0.97449, "f05": 0.9204, "f1": 0.8539, "r95": 0.7755, "r99": 0.6939, "stealth95": 0.7755, "hard_fpr95": 0.00431, "caught95": 38, "fp95": 2, "caught99": 34, "fp99": 0}}, "b1": {"full": {"pr_auc": 0.96221, "roc_auc": 0.98608, "f05": 0.9285, "f1": 0.9027, "r95": 0.8065, "r99": 0.6516, "stealth95": 0.7809, "hard_fpr95": 0.01391, "caught95": 250, "fp95": 12, "caught99": 202, "fp99": 2}, "hard": {"pr_auc": 0.93527, "roc_auc": 0.97948, "f05": 0.8994, "f1": 0.8667, "r95": 0.7375, "r99": 0.1812, "stealth95": 0.7069, "hard_fpr95": 0.01008, "caught95": 118, "fp95": 6, "caught99": 29, "fp99": 0}}}, {"id": "pro_v13_fus", "tier": "pro", "hw": "pro_v13", "ver": "v13", "track": "fusion", "pairPrev": "pro_v12_fus", "name": "Pro v1.3 (MacBERT-6L) + 融合", "short": "Pro v1.3 融合", "badge": "Hard 双榜第1", "size": 49.49, "ms": {"b3": 157.41, "b2": 157.41, "b1": 157.41}, "b3": {"full": {"pr_auc": 0.994, "roc_auc": 0.99977, "f05": 0.9749, "f1": 0.9717, "r95": 0.9717, "r99": 0.8396, "stealth95": 0.973, "hard_fpr95": 0.00326, "caught95": 103, "fp95": 4, "caught99": 89, "fp99": 0}, "hard": {"pr_auc": 0.97186, "roc_auc": 0.99391, "f05": 0.9509, "f1": 0.9242, "r95": 0.8785, "r99": 0.6869, "stealth95": 0.8679, "hard_fpr95": 0.01269, "caught95": 188, "fp95": 9, "caught99": 146, "fp99": 1}}, "b2": {"full": {"pr_auc": 0.98115, "roc_auc": 0.99882, "f05": 0.9633, "f1": 0.9396, "r95": 0.88, "r99": 0.84, "stealth95": 0.8571, "hard_fpr95": 0.0, "caught95": 66, "fp95": 3, "caught99": 62, "fp99": 0}, "hard": {"pr_auc": 0.99094, "roc_auc": 0.9974, "f05": 0.9699, "f1": 0.9508, "r95": 0.9206, "r99": 0.8413, "stealth95": 0.9206, "hard_fpr95": 0.00862, "caught95": 58, "fp95": 2, "caught99": 52, "fp99": 0}}, "b1": {"full": {"pr_auc": 0.99454, "roc_auc": 0.99825, "f05": 0.9739, "f1": 0.9691, "r95": 0.971, "r99": 0.8613, "stealth95": 0.9607, "hard_fpr95": 0.01546, "caught95": 300, "fp95": 15, "caught99": 267, "fp99": 2}, "hard": {"pr_auc": 0.98188, "roc_auc": 0.99512, "f05": 0.9495, "f1": 0.9397, "r95": 0.925, "r99": 0.7312, "stealth95": 0.931, "hard_fpr95": 0.00336, "caught95": 148, "fp95": 7, "caught99": 117, "fp99": 1}}}, {"id": "pro_v13_txt", "tier": "pro", "hw": "pro_v13", "ver": "v13", "track": "text", "pairPrev": "pro_v12_txt", "name": "Pro v1.3 (MacBERT-6L) 纯文本", "short": "Pro v1.3 纯文本", "badge": "49.49MB 纯文本", "size": 49.49, "ms": {"b3": 157.41, "b2": 157.41, "b1": 157.41}, "b3": {"full": {"pr_auc": 0.93817, "roc_auc": 0.99385, "f05": 0.9375, "f1": 0.8877, "r95": 0.8152, "r99": 0.7174, "stealth95": 0.8333, "hard_fpr95": 0.0, "caught95": 75, "fp95": 2, "caught99": 66, "fp99": 0}, "hard": {"pr_auc": 0.88915, "roc_auc": 0.96647, "f05": 0.8785, "f1": 0.8362, "r95": 0.6323, "r99": 0.3097, "stealth95": 0.596, "hard_fpr95": 0.00763, "caught95": 97, "fp95": 5, "caught99": 47, "fp99": 0}}, "b2": {"full": {"pr_auc": 0.9176, "roc_auc": 0.99513, "f05": 0.9072, "f1": 0.8571, "r95": 0.7049, "r99": 0.3115, "stealth95": 0.7143, "hard_fpr95": 0.00431, "caught95": 43, "fp95": 2, "caught99": 19, "fp99": 0}, "hard": {"pr_auc": 0.95408, "roc_auc": 0.98897, "f05": 0.9268, "f1": 0.88, "r95": 0.7755, "r99": 0.6735, "stealth95": 0.7755, "hard_fpr95": 0.00862, "caught95": 38, "fp95": 2, "caught99": 32, "fp99": 0}}, "b1": {"full": {"pr_auc": 0.98485, "roc_auc": 0.9951, "f05": 0.9629, "f1": 0.9518, "r95": 0.9516, "r99": 0.6774, "stealth95": 0.9551, "hard_fpr95": 0.017, "caught95": 294, "fp95": 15, "caught99": 209, "fp99": 2}, "hard": {"pr_auc": 0.96644, "roc_auc": 0.99064, "f05": 0.9474, "f1": 0.9333, "r95": 0.9, "r99": 0.2687, "stealth95": 0.9052, "hard_fpr95": 0.0084, "caught95": 144, "fp95": 6, "caught99": 42, "fp99": 0}}}, {"id": "standard_v13_fus", "tier": "std", "hw": "standard_v13", "ver": "v13", "track": "fusion", "pairPrev": "std_v12_fus", "name": "Standard v1.3 (BGE KD) + 融合", "short": "Std v1.3 融合", "badge": "Real纯文PR 0.9412", "size": 16.86, "ms": {"b3": 52.79, "b2": 52.79, "b1": 52.79}, "b3": {"full": {"pr_auc": 0.99246, "roc_auc": 0.99973, "f05": 0.9674, "f1": 0.9619, "r95": 0.9623, "r99": 0.7075, "stealth95": 0.9459, "hard_fpr95": 0.00326, "caught95": 101, "fp95": 5, "caught99": 75, "fp99": 0}, "hard": {"pr_auc": 0.96738, "roc_auc": 0.99317, "f05": 0.9333, "f1": 0.9213, "r95": 0.8224, "r99": 0.6121, "stealth95": 0.7987, "hard_fpr95": 0.01015, "caught95": 176, "fp95": 9, "caught99": 130, "fp99": 1}}, "b2": {"full": {"pr_auc": 0.96606, "roc_auc": 0.99753, "f05": 0.944, "f1": 0.9103, "r95": 0.8533, "r99": 0.7467, "stealth95": 0.8413, "hard_fpr95": 0.00431, "caught95": 64, "fp95": 2, "caught99": 55, "fp99": 0}, "hard": {"pr_auc": 0.98494, "roc_auc": 0.99569, "f05": 0.9622, "f1": 0.9449, "r95": 0.9048, "r99": 0.7143, "stealth95": 0.8889, "hard_fpr95": 0.01293, "caught95": 56, "fp95": 3, "caught99": 45, "fp99": 0}}, "b1": {"full": {"pr_auc": 0.99281, "roc_auc": 0.99773, "f05": 0.9681, "f1": 0.9562, "r95": 0.9548, "r99": 0.8806, "stealth95": 0.9438, "hard_fpr95": 0.01391, "caught95": 296, "fp95": 15, "caught99": 273, "fp99": 2}, "hard": {"pr_auc": 0.97554, "roc_auc": 0.99346, "f05": 0.9375, "f1": 0.9182, "r95": 0.8125, "r99": 0.6375, "stealth95": 0.8362, "hard_fpr95": 0.0, "caught95": 130, "fp95": 5, "caught99": 101, "fp99": 1}}}, {"id": "standard_v13_txt", "tier": "std", "hw": "standard_v13", "ver": "v13", "track": "text", "pairPrev": "std_v12_txt", "name": "Standard v1.3 (BGE KD) 纯文本", "short": "Std v1.3 纯文本", "badge": "16.86MB 纯文本", "size": 16.86, "ms": {"b3": 52.79, "b2": 52.79, "b1": 52.79}, "b3": {"full": {"pr_auc": 0.94115, "roc_auc": 0.99376, "f05": 0.947, "f1": 0.9017, "r95": 0.8478, "r99": 0.6739, "stealth95": 0.85, "hard_fpr95": 0.0, "caught95": 78, "fp95": 3, "caught99": 62, "fp99": 0}, "hard": {"pr_auc": 0.86071, "roc_auc": 0.95594, "f05": 0.8346, "f1": 0.8115, "r95": 0.5161, "r99": 0.3806, "stealth95": 0.4949, "hard_fpr95": 0.00509, "caught95": 80, "fp95": 4, "caught99": 58, "fp99": 0}}, "b2": {"full": {"pr_auc": 0.86478, "roc_auc": 0.98435, "f05": 0.9013, "f1": 0.8103, "r95": 0.6885, "r99": 0.2131, "stealth95": 0.6939, "hard_fpr95": 0.00431, "caught95": 42, "fp95": 1, "caught99": 12, "fp99": 0}, "hard": {"pr_auc": 0.91037, "roc_auc": 0.97901, "f05": 0.9091, "f1": 0.8776, "r95": 0.7755, "r99": 0.1429, "stealth95": 0.7551, "hard_fpr95": 0.00862, "caught95": 37, "fp95": 2, "caught99": 6, "fp99": 0}}, "b1": {"full": {"pr_auc": 0.97719, "roc_auc": 0.99297, "f05": 0.9517, "f1": 0.9344, "r95": 0.9194, "r99": 0.4129, "stealth95": 0.9157, "hard_fpr95": 0.017, "caught95": 284, "fp95": 15, "caught99": 127, "fp99": 1}, "hard": {"pr_auc": 0.95028, "roc_auc": 0.98835, "f05": 0.931, "f1": 0.9167, "r95": 0.8562, "r99": 0.2062, "stealth95": 0.8621, "hard_fpr95": 0.01176, "caught95": 136, "fp95": 7, "caught99": 33, "fp99": 0}}}, {"id": "lite_v13_fus", "tier": "lite", "hw": "lite_v13", "ver": "v13", "track": "fusion", "pairPrev": "lite_v12_fus", "name": "Lite v1.3 (MiniRBT KD) + 融合", "short": "Lite v1.3 融合", "badge": "Real融合PR 0.9961", "size": 7.05, "ms": {"b3": 24.31, "b2": 24.31, "b1": 24.31}, "b3": {"full": {"pr_auc": 0.99615, "roc_auc": 0.99986, "f05": 0.977, "f1": 0.9725, "r95": 0.9811, "r99": 0.8208, "stealth95": 0.973, "hard_fpr95": 0.00651, "caught95": 104, "fp95": 4, "caught99": 87, "fp99": 0}, "hard": {"pr_auc": 0.96733, "roc_auc": 0.99176, "f05": 0.9294, "f1": 0.9198, "r95": 0.8131, "r99": 0.6215, "stealth95": 0.805, "hard_fpr95": 0.01269, "caught95": 174, "fp95": 9, "caught99": 133, "fp99": 1}}, "b2": {"full": {"pr_auc": 0.96486, "roc_auc": 0.99735, "f05": 0.9587, "f1": 0.9231, "r95": 0.88, "r99": 0.6267, "stealth95": 0.8571, "hard_fpr95": 0.00431, "caught95": 66, "fp95": 2, "caught99": 47, "fp99": 0}, "hard": {"pr_auc": 0.98588, "roc_auc": 0.99562, "f05": 0.9636, "f1": 0.944, "r95": 0.9365, "r99": 0.8413, "stealth95": 0.9206, "hard_fpr95": 0.01293, "caught95": 58, "fp95": 3, "caught99": 52, "fp99": 0}}, "b1": {"full": {"pr_auc": 0.99321, "roc_auc": 0.99779, "f05": 0.9698, "f1": 0.9595, "r95": 0.9548, "r99": 0.8677, "stealth95": 0.9382, "hard_fpr95": 0.01236, "caught95": 296, "fp95": 14, "caught99": 269, "fp99": 2}, "hard": {"pr_auc": 0.97722, "roc_auc": 0.99368, "f05": 0.9425, "f1": 0.9211, "r95": 0.8812, "r99": 0.75, "stealth95": 0.8707, "hard_fpr95": 0.00336, "caught95": 141, "fp95": 6, "caught99": 120, "fp99": 1}}}, {"id": "lite_v13_txt", "tier": "lite", "hw": "lite_v13", "ver": "v13", "track": "text", "pairPrev": "lite_v12_txt", "name": "Lite v1.3 (MiniRBT KD) 纯文本", "short": "Lite v1.3 纯文本", "badge": "7.05MB 纯文本", "size": 7.05, "ms": {"b3": 24.31, "b2": 24.31, "b1": 24.31}, "b3": {"full": {"pr_auc": 0.92269, "roc_auc": 0.98999, "f05": 0.9239, "f1": 0.8889, "r95": 0.7609, "r99": 0.4674, "stealth95": 0.7667, "hard_fpr95": 0.0, "caught95": 70, "fp95": 2, "caught99": 43, "fp99": 0}, "hard": {"pr_auc": 0.84121, "roc_auc": 0.9574, "f05": 0.8422, "f1": 0.8055, "r95": 0.4323, "r99": 0.0774, "stealth95": 0.4444, "hard_fpr95": 0.00509, "caught95": 67, "fp95": 3, "caught99": 11, "fp99": 0}}, "b2": {"full": {"pr_auc": 0.89082, "roc_auc": 0.98604, "f05": 0.865, "f1": 0.8205, "r95": 0.5902, "r99": 0.5574, "stealth95": 0.5918, "hard_fpr95": 0.0, "caught95": 36, "fp95": 1, "caught99": 33, "fp99": 0}, "hard": {"pr_auc": 0.9337, "roc_auc": 0.97835, "f05": 0.9155, "f1": 0.8667, "r95": 0.7959, "r99": 0.5918, "stealth95": 0.7959, "hard_fpr95": 0.00862, "caught95": 39, "fp95": 2, "caught99": 28, "fp99": 0}}, "b1": {"full": {"pr_auc": 0.97137, "roc_auc": 0.99244, "f05": 0.9578, "f1": 0.9398, "r95": 0.9226, "r99": 0.1581, "stealth95": 0.9157, "hard_fpr95": 0.01391, "caught95": 286, "fp95": 14, "caught99": 48, "fp99": 0}, "hard": {"pr_auc": 0.94535, "roc_auc": 0.98869, "f05": 0.9323, "f1": 0.9079, "r95": 0.8438, "r99": 0.1375, "stealth95": 0.8534, "hard_fpr95": 0.01008, "caught95": 135, "fp95": 6, "caught99": 22, "fp99": 0}}}, {"id": "nano_v13_fus", "tier": "nano", "hw": "nano_v13", "ver": "v13", "track": "fusion", "pairPrev": "nano_v12_fus", "name": "Nano v1.3 (1.22MB QDQ) + 融合", "short": "Nano v1.3 融合", "badge": "1.89ms · R@P95 98.1%", "size": 1.22, "ms": {"b3": 1.89, "b2": 1.89, "b1": 1.89}, "b3": {"full": {"pr_auc": 0.99013, "roc_auc": 0.99961, "f05": 0.9644, "f1": 0.9677, "r95": 0.9811, "r99": 0.6604, "stealth95": 0.973, "hard_fpr95": 0.00651, "caught95": 104, "fp95": 5, "caught99": 69, "fp99": 0}, "hard": {"pr_auc": 0.96206, "roc_auc": 0.98975, "f05": 0.9356, "f1": 0.9198, "r95": 0.8551, "r99": 0.5935, "stealth95": 0.8428, "hard_fpr95": 0.01269, "caught95": 183, "fp95": 9, "caught99": 126, "fp99": 1}}, "b2": {"full": {"pr_auc": 0.96621, "roc_auc": 0.99751, "f05": 0.9403, "f1": 0.9189, "r95": 0.8533, "r99": 0.7333, "stealth95": 0.8254, "hard_fpr95": 0.0, "caught95": 63, "fp95": 3, "caught99": 55, "fp99": 0}, "hard": {"pr_auc": 0.98898, "roc_auc": 0.99658, "f05": 0.9831, "f1": 0.9587, "r95": 0.9206, "r99": 0.9206, "stealth95": 0.9206, "hard_fpr95": 0.00862, "caught95": 58, "fp95": 2, "caught99": 58, "fp99": 0}}, "b1": {"full": {"pr_auc": 0.99146, "roc_auc": 0.99719, "f05": 0.9642, "f1": 0.9631, "r95": 0.9677, "r99": 0.7968, "stealth95": 0.9663, "hard_fpr95": 0.01236, "caught95": 300, "fp95": 14, "caught99": 246, "fp99": 2}, "hard": {"pr_auc": 0.97135, "roc_auc": 0.99191, "f05": 0.9282, "f1": 0.9317, "r95": 0.8375, "r99": 0.5375, "stealth95": 0.8362, "hard_fpr95": 0.00504, "caught95": 134, "fp95": 7, "caught99": 86, "fp99": 0}}}, {"id": "nano_v13_txt", "tier": "nano", "hw": "nano_v13", "ver": "v13", "track": "text", "pairPrev": "nano_v12_txt", "name": "Nano v1.3 (1.22MB QDQ) 纯文本", "short": "Nano v1.3 纯文本", "badge": "1.22MB 纯文本", "size": 1.22, "ms": {"b3": 1.89, "b2": 1.89, "b1": 1.89}, "b3": {"full": {"pr_auc": 0.91296, "roc_auc": 0.9885, "f05": 0.9102, "f1": 0.883, "r95": 0.7174, "r99": 0.3043, "stealth95": 0.6667, "hard_fpr95": 0.00326, "caught95": 65, "fp95": 3, "caught99": 26, "fp99": 0}, "hard": {"pr_auc": 0.79928, "roc_auc": 0.94343, "f05": 0.8171, "f1": 0.731, "r95": 0.3484, "r99": 0.1548, "stealth95": 0.3636, "hard_fpr95": 0.00509, "caught95": 54, "fp95": 2, "caught99": 24, "fp99": 0}}, "b2": {"full": {"pr_auc": 0.88182, "roc_auc": 0.98014, "f05": 0.8734, "f1": 0.8197, "r95": 0.6557, "r99": 0.4918, "stealth95": 0.6122, "hard_fpr95": 0.00431, "caught95": 38, "fp95": 2, "caught99": 30, "fp99": 0}, "hard": {"pr_auc": 0.92158, "roc_auc": 0.9715, "f05": 0.884, "f1": 0.8713, "r95": 0.6531, "r99": 0.551, "stealth95": 0.6122, "hard_fpr95": 0.00431, "caught95": 30, "fp95": 1, "caught99": 26, "fp99": 0}}, "b1": {"full": {"pr_auc": 0.97059, "roc_auc": 0.98898, "f05": 0.9408, "f1": 0.9278, "r95": 0.8742, "r99": 0.6484, "stealth95": 0.9045, "hard_fpr95": 0.02009, "caught95": 270, "fp95": 14, "caught99": 201, "fp99": 2}, "hard": {"pr_auc": 0.94945, "roc_auc": 0.98435, "f05": 0.9187, "f1": 0.8997, "r95": 0.775, "r99": 0.3688, "stealth95": 0.7759, "hard_fpr95": 0.01008, "caught95": 124, "fp95": 6, "caught99": 57, "fp99": 0}}}, {"id": "cas13_l2d_10_fus", "tier": "cascade", "hw": "cas13_l2d_10", "ver": "v13", "track": "fusion", "name": "Nano→Pro v1.3 (L2D 10%) + 融合", "short": "级联 L2D 10% 融合", "badge": "3.4ms · 46×提速 · Hard 89.2%", "size": 50.71, "ms": {"b3": 3.4, "b2": 16.63, "b1": 24.1}, "b3": {"full": {"pr_auc": 0.98886, "roc_auc": 0.99955, "f05": 0.9601, "f1": 0.9626, "r95": 0.9717, "r99": 0.6981, "stealth95": 0.973, "hard_fpr95": 0.00651, "caught95": 103, "fp95": 5, "caught99": 73, "fp99": 0}, "hard": {"pr_auc": 0.97044, "roc_auc": 0.9926, "f05": 0.9447, "f1": 0.922, "r95": 0.8925, "r99": 0.6776, "stealth95": 0.8931, "hard_fpr95": 0.01777, "caught95": 191, "fp95": 10, "caught99": 145, "fp99": 1}}, "b2": {"full": {"pr_auc": 0.97157, "roc_auc": 0.99794, "f05": 0.944, "f1": 0.9262, "r95": 0.8667, "r99": 0.76, "stealth95": 0.8254, "hard_fpr95": 0.0, "caught95": 64, "fp95": 3, "caught99": 57, "fp99": 0}, "hard": {"pr_auc": 0.98684, "roc_auc": 0.99596, "f05": 0.9661, "f1": 0.9421, "r95": 0.9206, "r99": 0.8413, "stealth95": 0.9206, "hard_fpr95": 0.01293, "caught95": 58, "fp95": 3, "caught99": 53, "fp99": 0}}, "b1": {"full": {"pr_auc": 0.9938, "roc_auc": 0.9979, "f05": 0.9754, "f1": 0.9692, "r95": 0.971, "r99": 0.8677, "stealth95": 0.9663, "hard_fpr95": 0.01236, "caught95": 301, "fp95": 14, "caught99": 269, "fp99": 2}, "hard": {"pr_auc": 0.97809, "roc_auc": 0.9937, "f05": 0.9508, "f1": 0.9434, "r95": 0.9125, "r99": 0.625, "stealth95": 0.9224, "hard_fpr95": 0.00336, "caught95": 146, "fp95": 7, "caught99": 99, "fp99": 1}}}, {"id": "cas13_l2d_10_txt", "tier": "cascade", "hw": "cas13_l2d_10", "ver": "v13", "track": "text", "name": "Nano→Pro v1.3 (L2D 10%) 纯文本", "short": "级联 L2D 10% 纯文本", "badge": "3.4ms · 46×提速 · Hard 89.2%", "size": 50.71, "ms": {"b3": 3.4, "b2": 16.63, "b1": 24.1}, "b3": {"full": {"pr_auc": 0.91133, "roc_auc": 0.987, "f05": 0.9191, "f1": 0.8814, "r95": 0.7609, "r99": 0.3913, "stealth95": 0.7667, "hard_fpr95": 0.00326, "caught95": 70, "fp95": 3, "caught99": 36, "fp99": 0}, "hard": {"pr_auc": 0.87792, "roc_auc": 0.95483, "f05": 0.8855, "f1": 0.8307, "r95": 0.6323, "r99": 0.1935, "stealth95": 0.596, "hard_fpr95": 0.01018, "caught95": 97, "fp95": 5, "caught99": 30, "fp99": 0}}, "b2": {"full": {"pr_auc": 0.90875, "roc_auc": 0.98275, "f05": 0.9144, "f1": 0.8571, "r95": 0.7705, "r99": 0.6557, "stealth95": 0.7755, "hard_fpr95": 0.00431, "caught95": 47, "fp95": 2, "caught99": 40, "fp99": 0}, "hard": {"pr_auc": 0.94095, "roc_auc": 0.97636, "f05": 0.9268, "f1": 0.8958, "r95": 0.7959, "r99": 0.6735, "stealth95": 0.7755, "hard_fpr95": 0.00862, "caught95": 38, "fp95": 2, "caught99": 32, "fp99": 0}}, "b1": {"full": {"pr_auc": 0.9753, "roc_auc": 0.99093, "f05": 0.9639, "f1": 0.9406, "r95": 0.9226, "r99": 0.7452, "stealth95": 0.9438, "hard_fpr95": 0.01855, "caught95": 286, "fp95": 14, "caught99": 231, "fp99": 2}, "hard": {"pr_auc": 0.96307, "roc_auc": 0.98754, "f05": 0.9444, "f1": 0.9226, "r95": 0.8938, "r99": 0.475, "stealth95": 0.9052, "hard_fpr95": 0.01008, "caught95": 142, "fp95": 7, "caught99": 75, "fp99": 0}}}, {"id": "cas13_naive_15_fus", "tier": "cascade", "hw": "cas13_naive_15", "ver": "v13", "track": "fusion", "name": "Nano→Pro v1.3 (Naive 15%) + 融合", "short": "级联 Naive 15% 融合", "badge": "10.7ms · B2纯文 0.9289", "size": 50.71, "ms": {"b3": 10.67, "b2": 17.91, "b1": 26.0}, "b3": {"full": {"pr_auc": 0.99157, "roc_auc": 0.99965, "f05": 0.9717, "f1": 0.9717, "r95": 0.9717, "r99": 0.8396, "stealth95": 0.973, "hard_fpr95": 0.00651, "caught95": 103, "fp95": 5, "caught99": 88, "fp99": 0}, "hard": {"pr_auc": 0.96848, "roc_auc": 0.99211, "f05": 0.9434, "f1": 0.9173, "r95": 0.8598, "r99": 0.6729, "stealth95": 0.8491, "hard_fpr95": 0.01269, "caught95": 184, "fp95": 8, "caught99": 144, "fp99": 1}}, "b2": {"full": {"pr_auc": 0.97408, "roc_auc": 0.99807, "f05": 0.9561, "f1": 0.9324, "r95": 0.88, "r99": 0.8133, "stealth95": 0.8571, "hard_fpr95": 0.00431, "caught95": 66, "fp95": 3, "caught99": 60, "fp99": 0}, "hard": {"pr_auc": 0.98684, "roc_auc": 0.99596, "f05": 0.9661, "f1": 0.9421, "r95": 0.9206, "r99": 0.8413, "stealth95": 0.9206, "hard_fpr95": 0.01293, "caught95": 58, "fp95": 3, "caught99": 53, "fp99": 0}}, "b1": {"full": {"pr_auc": 0.99375, "roc_auc": 0.99789, "f05": 0.9762, "f1": 0.9692, "r95": 0.971, "r99": 0.8677, "stealth95": 0.9607, "hard_fpr95": 0.01546, "caught95": 301, "fp95": 15, "caught99": 269, "fp99": 2}, "hard": {"pr_auc": 0.97996, "roc_auc": 0.99409, "f05": 0.953, "f1": 0.9434, "r95": 0.9187, "r99": 0.7375, "stealth95": 0.931, "hard_fpr95": 0.00336, "caught95": 147, "fp95": 7, "caught99": 118, "fp99": 1}}}, {"id": "cas13_naive_15_txt", "tier": "cascade", "hw": "cas13_naive_15", "ver": "v13", "track": "text", "name": "Nano→Pro v1.3 (Naive 15%) 纯文本", "short": "级联 Naive 15% 纯文本", "badge": "10.7ms · B2纯文 0.9289", "size": 50.71, "ms": {"b3": 10.67, "b2": 17.91, "b1": 26.0}, "b3": {"full": {"pr_auc": 0.92684, "roc_auc": 0.98751, "f05": 0.9375, "f1": 0.8876, "r95": 0.8261, "r99": 0.75, "stealth95": 0.8333, "hard_fpr95": 0.0, "caught95": 75, "fp95": 4, "caught99": 69, "fp99": 0}, "hard": {"pr_auc": 0.87383, "roc_auc": 0.95451, "f05": 0.8688, "f1": 0.8169, "r95": 0.6, "r99": 0.2387, "stealth95": 0.5556, "hard_fpr95": 0.01018, "caught95": 93, "fp95": 4, "caught99": 37, "fp99": 0}}, "b2": {"full": {"pr_auc": 0.91245, "roc_auc": 0.98251, "f05": 0.9289, "f1": 0.8739, "r95": 0.7869, "r99": 0.6885, "stealth95": 0.7959, "hard_fpr95": 0.00862, "caught95": 48, "fp95": 2, "caught99": 41, "fp99": 0}, "hard": {"pr_auc": 0.93972, "roc_auc": 0.9754, "f05": 0.9268, "f1": 0.9053, "r95": 0.7959, "r99": 0.6735, "stealth95": 0.7959, "hard_fpr95": 0.00862, "caught95": 39, "fp95": 2, "caught99": 33, "fp99": 0}}, "b1": {"full": {"pr_auc": 0.97677, "roc_auc": 0.99098, "f05": 0.9636, "f1": 0.9474, "r95": 0.929, "r99": 0.7516, "stealth95": 0.9494, "hard_fpr95": 0.01855, "caught95": 288, "fp95": 15, "caught99": 233, "fp99": 2}, "hard": {"pr_auc": 0.96065, "roc_auc": 0.98782, "f05": 0.9495, "f1": 0.929, "r95": 0.9, "r99": 0.2188, "stealth95": 0.9138, "hard_fpr95": 0.0084, "caught95": 144, "fp95": 6, "caught99": 34, "fp99": 0}}}, {"id": "cas13_l2d_15_fus", "tier": "cascade", "hw": "cas13_l2d_15", "ver": "v13", "track": "fusion", "name": "Nano→Pro v1.3 (L2D 15%) + 融合", "short": "级联 L2D 15% 融合", "badge": "11.4ms · 5.1%转交", "size": 50.71, "ms": {"b3": 11.44, "b2": 22.36, "b1": 32.4}, "b3": {"full": {"pr_auc": 0.98836, "roc_auc": 0.99954, "f05": 0.9579, "f1": 0.9626, "r95": 0.9717, "r99": 0.717, "stealth95": 0.973, "hard_fpr95": 0.00651, "caught95": 103, "fp95": 5, "caught99": 75, "fp99": 0}, "hard": {"pr_auc": 0.9681, "roc_auc": 0.99203, "f05": 0.942, "f1": 0.9187, "r95": 0.8692, "r99": 0.6822, "stealth95": 0.8553, "hard_fpr95": 0.01269, "caught95": 186, "fp95": 8, "caught99": 146, "fp99": 1}}, "b2": {"full": {"pr_auc": 0.97212, "roc_auc": 0.99795, "f05": 0.9561, "f1": 0.9262, "r95": 0.8667, "r99": 0.8133, "stealth95": 0.8254, "hard_fpr95": 0.0, "caught95": 64, "fp95": 3, "caught99": 60, "fp99": 0}, "hard": {"pr_auc": 0.98684, "roc_auc": 0.99596, "f05": 0.9661, "f1": 0.9421, "r95": 0.9206, "r99": 0.8413, "stealth95": 0.9206, "hard_fpr95": 0.01293, "caught95": 58, "fp95": 3, "caught99": 53, "fp99": 0}}, "b1": {"full": {"pr_auc": 0.99389, "roc_auc": 0.99792, "f05": 0.9769, "f1": 0.9692, "r95": 0.971, "r99": 0.871, "stealth95": 0.9607, "hard_fpr95": 0.01546, "caught95": 301, "fp95": 15, "caught99": 270, "fp99": 2}, "hard": {"pr_auc": 0.98066, "roc_auc": 0.99423, "f05": 0.9547, "f1": 0.9434, "r95": 0.9187, "r99": 0.75, "stealth95": 0.931, "hard_fpr95": 0.00336, "caught95": 147, "fp95": 7, "caught99": 120, "fp99": 1}}}, {"id": "cas13_l2d_15_txt", "tier": "cascade", "hw": "cas13_l2d_15", "ver": "v13", "track": "text", "name": "Nano→Pro v1.3 (L2D 15%) 纯文本", "short": "级联 L2D 15% 纯文本", "badge": "11.4ms · 5.1%转交", "size": 50.71, "ms": {"b3": 11.44, "b2": 22.36, "b1": 32.4}, "b3": {"full": {"pr_auc": 0.91229, "roc_auc": 0.98766, "f05": 0.9158, "f1": 0.8736, "r95": 0.75, "r99": 0.4239, "stealth95": 0.7667, "hard_fpr95": 0.00326, "caught95": 69, "fp95": 3, "caught99": 39, "fp99": 0}, "hard": {"pr_auc": 0.87846, "roc_auc": 0.95623, "f05": 0.8731, "f1": 0.8219, "r95": 0.6129, "r99": 0.2194, "stealth95": 0.5758, "hard_fpr95": 0.01272, "caught95": 95, "fp95": 5, "caught99": 34, "fp99": 0}}, "b2": {"full": {"pr_auc": 0.89752, "roc_auc": 0.9834, "f05": 0.9144, "f1": 0.8667, "r95": 0.7705, "r99": 0.3115, "stealth95": 0.7755, "hard_fpr95": 0.00431, "caught95": 47, "fp95": 2, "caught99": 18, "fp99": 0}, "hard": {"pr_auc": 0.94149, "roc_auc": 0.97735, "f05": 0.9268, "f1": 0.9053, "r95": 0.7755, "r99": 0.6735, "stealth95": 0.7755, "hard_fpr95": 0.00431, "caught95": 38, "fp95": 1, "caught99": 33, "fp99": 0}}, "b1": {"full": {"pr_auc": 0.97648, "roc_auc": 0.99129, "f05": 0.9639, "f1": 0.9453, "r95": 0.9323, "r99": 0.6774, "stealth95": 0.9494, "hard_fpr95": 0.01855, "caught95": 289, "fp95": 15, "caught99": 210, "fp99": 2}, "hard": {"pr_auc": 0.95732, "roc_auc": 0.98775, "f05": 0.9441, "f1": 0.9265, "r95": 0.9, "r99": 0.1625, "stealth95": 0.9052, "hard_fpr95": 0.01008, "caught95": 143, "fp95": 7, "caught99": 26, "fp99": 0}}}]);
+    const V3_EXTRAS = {"age": {"bands": [{"key": "<=14d", "label": "≤14天新视频", "n": 1170, "pos": 42}, {"key": "14-30d", "label": "14–30天", "n": 705, "pos": 20}, {"key": "1-3m", "label": "1–3个月", "n": 437, "pos": 28}, {"key": "3-12m", "label": "3–12个月", "n": 207, "pos": 5}, {"key": ">1y", "label": ">1年老视频", "n": 468, "pos": 11}], "series": [{"name": "Rules-v2 Pro (43.8KB · 平衡档)", "short": "Rules-v2 Pro", "col": "#2dd4bf", "data": {"<=14d": {"n": 1170, "pos": 42, "tp": 37, "fp": 0, "recall": 0.881, "fpr": 0.0}, "14-30d": {"n": 705, "pos": 20, "tp": 20, "fp": 0, "recall": 1.0, "fpr": 0.0}, "1-3m": {"n": 437, "pos": 28, "tp": 27, "fp": 0, "recall": 0.9643, "fpr": 0.0}, "3-12m": {"n": 207, "pos": 5, "tp": 5, "fp": 0, "recall": 1.0, "fpr": 0.0}, ">1y": {"n": 468, "pos": 11, "tp": 10, "fp": 0, "recall": 0.9091, "fpr": 0.0}}}, {"name": "Rules-v2 Lite (29.1KB · 0树)", "short": "Rules-v2 Lite", "col": "#34d399", "data": {"<=14d": {"n": 1170, "pos": 42, "tp": 36, "fp": 1, "recall": 0.8571, "fpr": 0.00089}, "14-30d": {"n": 705, "pos": 20, "tp": 20, "fp": 0, "recall": 1.0, "fpr": 0.0}, "1-3m": {"n": 437, "pos": 28, "tp": 27, "fp": 0, "recall": 0.9643, "fpr": 0.0}, "3-12m": {"n": 207, "pos": 5, "tp": 5, "fp": 0, "recall": 1.0, "fpr": 0.0}, ">1y": {"n": 468, "pos": 11, "tp": 9, "fp": 1, "recall": 0.8182, "fpr": 0.00219}}}, {"name": "OjinjinNet-Pro v1.3 (+融合)", "short": "v1.3 Pro 融合", "col": "#38bdf8", "data": {"<=14d": {"n": 1170, "pos": 42, "tp": 38, "fp": 1, "recall": 0.9048, "fpr": 0.00089}, "14-30d": {"n": 705, "pos": 20, "tp": 20, "fp": 0, "recall": 1.0, "fpr": 0.0}, "1-3m": {"n": 437, "pos": 28, "tp": 28, "fp": 0, "recall": 1.0, "fpr": 0.0}, "3-12m": {"n": 207, "pos": 5, "tp": 5, "fp": 0, "recall": 1.0, "fpr": 0.0}, ">1y": {"n": 468, "pos": 11, "tp": 11, "fp": 2, "recall": 1.0, "fpr": 0.00438}}}, {"name": "OjinjinNet-Nano v1.3 (1.22MB)", "short": "v1.3 Nano 融合", "col": "#a78bfa", "data": {"<=14d": {"n": 1170, "pos": 42, "tp": 40, "fp": 2, "recall": 0.9524, "fpr": 0.00177}, "14-30d": {"n": 705, "pos": 20, "tp": 20, "fp": 0, "recall": 1.0, "fpr": 0.0}, "1-3m": {"n": 437, "pos": 28, "tp": 28, "fp": 1, "recall": 1.0, "fpr": 0.00244}, "3-12m": {"n": 207, "pos": 5, "tp": 5, "fp": 0, "recall": 1.0, "fpr": 0.0}, ">1y": {"n": 468, "pos": 11, "tp": 11, "fp": 2, "recall": 1.0, "fpr": 0.00438}}}]}, "oob": [{"id": "o_nano", "name": "OjinjinNet-Nano v1.3 (+融合 · 1.22MB)", "label": "v1.3 Nano (98.1% / 0.65%)", "kind": "net", "col": "#38bdf8", "thr": 0.5, "f05": 0.9594, "precision": 0.9541, "recall": 0.9811, "fpr": 0.00174, "hh_fpr": 0.00651, "stealth_rec": 0.973, "tp": 104, "fp": 5, "fn": 2, "tn": 2876, "hh_fp": 2, "hh_tot": 307}, {"id": "o_pro", "name": "OjinjinNet-Pro v1.3 (+融合 · 49.5MB)", "label": "v1.3 Pro (96.2% / 0.33%)", "kind": "net", "col": "#38bdf8", "thr": 0.5, "f05": 0.9696, "precision": 0.9714, "recall": 0.9623, "fpr": 0.00104, "hh_fpr": 0.00326, "stealth_rec": 0.9595, "tp": 102, "fp": 3, "fn": 4, "tn": 2878, "hh_fp": 1, "hh_tot": 307}, {"id": "o_rpro", "name": "OjinjinRules v2.0 Pro (43.8KB · 平衡档)", "label": "Rules-v2 Pro (93.4% / 0.00%!)", "kind": "rule", "col": "#2dd4bf", "thr": 0.62, "f05": 0.9861, "precision": 1.0, "recall": 0.934, "fpr": 0.0, "hh_fpr": 0.0, "stealth_rec": 0.9324, "tp": 99, "fp": 0, "fn": 7, "tn": 2881, "hh_fp": 0, "hh_tot": 307}, {"id": "o_rlite", "name": "OjinjinRules v2.0 Lite (29.1KB · 0树)", "label": "Rules-v2 Lite (91.5% / 0.00%)", "kind": "rule", "col": "#34d399", "thr": 0.62, "f05": 0.9661, "precision": 0.9798, "recall": 0.9151, "fpr": 0.00069, "hh_fpr": 0.0, "stealth_rec": 0.9054, "tp": 97, "fp": 2, "fn": 9, "tn": 2879, "hh_fp": 0, "hh_tot": 307}, {"id": "o_rcomp", "name": "OjinjinRules v2.0 Compact (38.6KB)", "label": "Rules-v2 Compact (88.7% / 0.00%)", "kind": "rule", "col": "#34d399", "thr": 0.6334, "f05": 0.9671, "precision": 0.9895, "recall": 0.8868, "fpr": 0.00035, "hh_fpr": 0.0, "stealth_rec": 0.8649, "tp": 94, "fp": 1, "fn": 12, "tn": 2880, "hh_fp": 0, "hh_tot": 307}, {"id": "o_b_cup", "name": "社区高星正则插件 B（轻量档）", "label": "插件 B 轻量 (49.1% / 误杀16.0%)", "kind": "comm", "col": "#f87171", "precision": 0.4906, "recall": 0.4906, "f05": 0.4906, "fpr": 0.01874, "hh_fpr": 0.15961, "tp": 52, "fp": 54, "hh_fp": 49}, {"id": "o_b_std", "name": "社区高星正则插件 B（标准档）", "label": "插件 B 标准 (51.9% / 误杀22.8%)", "kind": "comm", "col": "#f87171", "precision": 0.1432, "recall": 0.5189, "f05": 0.1675, "fpr": 0.1142, "hh_fpr": 0.22801, "tp": 55, "fp": 329, "hh_fp": 70}, {"id": "o_b_kill", "name": "社区高星正则插件 B（激进档）", "label": "插件 B 激进 (81.1% / 误杀35.8%)", "kind": "comm", "col": "#f87171", "precision": 0.1648, "recall": 0.8113, "f05": 0.196, "fpr": 0.15134, "hh_fpr": 0.35831, "tp": 86, "fp": 436, "hh_fp": 110}]};
+    let bench = "b3", exam = "full", track = "all", verMode = "v13", xAxis = "size", yAxis = "f05", sortKey = "f05", sortAsc = false, selectedId = "rules_v2_pro_rep", ageMode = "recall";
 
     function metricsOf(m) {
       const b = m[bench];
@@ -898,8 +943,8 @@
     function activeModels() {
       return MODELS.filter((m) => {
         if (!m[bench]) return false;
-        if (verMode === "v12" && (m.ver === "v11" || m.ver === "v10")) return false;
-        if (verMode === "compare" && m.ver === "v10") return false;
+        if (verMode === "v13" && (m.ver === "v12" || m.ver === "v11" || m.ver === "v10")) return false;
+        if (verMode === "compare" && (m.ver === "v11" || m.ver === "v10")) return false;
         if (track === "fusion" && m.track !== "fusion" && m.track !== "baseline") return false;
         if (track === "text" && m.track !== "text" && m.track !== "baseline") return false;
         return true;
@@ -924,19 +969,26 @@
       setActiveBtn(".y-btn", "y", yAxis);
 
       const descMap = {
-        b2_full: "Bench-v2 完整集：1,476 条晚 11 月新视频评论（纯文本 AI 61 条，融合综合账号 AI 75 条，高难真人 232 条，常规真人 1,169 条；已剔除 24 条灰区）",
+        b3_full: "Bench-v3 Real 封存真实集：2,987 条（116 个全新视频 · 5 个发布年龄段 ≤14d 至 >1y · 纯文本 AI 92 / 综合 AI 106 / 高难真人 307 / 普通真人 2,574）",
+        b3_hard: "Bench-v3 Hard 封存抗饱和压测集：1,434 条（127 个全新视频 · 纯文本 AI 155 / 综合 AI 214 / 高难真人 394 / 含 455 条 >1年老视频边界样本）",
+        b2_full: "Bench-v2 完整集：1,476 条晚 11 月新视频评论（纯文本 AI 61 条，融合综合账号 AI 75 条，高难真人 232 条，常规真人 1,169 条）",
         b2_hard: "Bench-v2 Hard-Only：295 条困难切片（纯文本 49 AI vs 246；融合综合 63 隐蔽/账号 AI vs 232 高难真人）",
         b1_full: "Bench-v1 完整集：1,310 条真实评论（150 显性 AI + 160 隐蔽 AI + 617 高难真人 + 383 普通真人）",
         b1_hard: "Bench-v1 Hard-Only：777 条高难子集（160 条规则零分隐蔽 AI + 617 条高难真人长评）",
       };
       document.getElementById("exam-desc").textContent = descMap[`${bench}_${exam}`];
+      document.getElementById("btn-exam-full").textContent = bench === "b3" ? "Real 真实混合 (2,987)" : "完整集";
+      document.getElementById("btn-exam-hard").textContent = bench === "b3" ? "Hard 抗饱和压测 (1,434)" : "Hard-Only 子集";
+      const v3sec = document.getElementById("v3-showcase");
+      if (v3sec) v3sec.style.display = bench === "b3" ? "grid" : "none";
+      setActiveBtn(".age-btn", "agemode", ageMode);
 
       document.getElementById("pareto-title").textContent = xAxis === "size"
         ? "体积 vs 性能帕累托前沿（越靠左上越优）"
         : "整页 20 条推理耗时 vs 性能前沿（越靠左上越快且越准）";
       document.getElementById("pareto-sub").innerHTML = xAxis === "size"
-        ? '横轴为 ONNX INT8 磁盘体积（对数刻度 MB · 涵盖 <strong class="c-pri">1.22 MB Nano</strong> 至 49.5 MB Pro）；实心圆 <strong class="c-suc">●</strong> 融合，实心菱形 <strong class="c-pri">◆</strong> 纯文本，星标 <strong class="c-acc">★</strong> 两级级联'
-        : '横轴为 PC（Ryzen 5 5600X · 4 线程 --parallel-buckets）端到端分桶推理 20 条评论总耗时（p50 对数刻度 ms）；<strong class="c-acc">★ Nano → Pro 级联</strong>位于 23–54 ms 极速区间，10% 档快于单跑 Lite';
+        ? '横轴为磁盘体积（对数刻度 · 涵盖 <strong class="c-suc">29 KB Rules v2 JS</strong>、<strong class="c-pri">1.22 MB Nano</strong> 至 49.5 MB Pro）；实心圆 <strong class="c-suc">●</strong> 综合/融合，实心菱形 <strong class="c-pri">◆</strong> 纯文本，星标 <strong class="c-acc">★</strong> 两级级联'
+        : '横轴为单页 20 条评论推理耗时（对数刻度 ms · 涵盖 <strong class="c-suc">0.048 ms Rules v2</strong> 至 157 ms Pro）；<strong class="c-acc">★ Nano → Pro 级联</strong>位于 3.4–11.4 ms 极速区间';
     }
 
     function renderTable() {
@@ -950,17 +1002,21 @@
       const tbody = document.getElementById("leaderboard-body");
       tbody.innerHTML = list.map((it, idx) => {
         const s = it.m;
-        const isSel = it.id === selectedId, isOld = (it.ver === "v11" || it.ver === "v10"), isBase = it.track === "baseline", isCas = it.tier === "cascade";
-        const tag = it.ver === "ref" ? "教师" : (it.track === "fusion" ? "融合" : (it.track === "text" ? "纯文本" : "规则"));
-        const verPill = isCas
-          ? `<span class="pill-cas">级联</span>`
-          : (it.ver === "v12" ? `<span class="pill-v12">v1.2</span>` : (it.ver === "v11" ? `<span class="pill-v11">v1.1</span>` : (it.ver === "v10" ? `<span class="pill-v10">v1.0</span>` : "")));
+        const isSel = it.id === selectedId, isOld = (it.ver === "v12" || it.ver === "v11" || it.ver === "v10"), isBase = it.track === "baseline", isCas = it.tier === "cascade", isRv2 = it.ver === "rules_v2";
+        const tag = it.ver === "ref" ? "教师" : (isRv2 ? (it.track === "fusion" ? "原生" : "纯文本") : (it.track === "fusion" ? "融合" : (it.track === "text" ? "纯文本" : "规则")));
+        const verPill = isRv2
+          ? `<span class="pill-rv2">JS v2</span>`
+          : (isCas ? `<span class="pill-cas">${it.ver === "v13" ? "v1.3级联" : "v1.2级联"}</span>`
+          : (it.ver === "v13" ? `<span class="pill-v13">v1.3</span>`
+          : (it.ver === "v12" ? `<span class="pill-v12">v1.2</span>`
+          : (it.ver === "v11" ? `<span class="pill-v11">v1.1</span>`
+          : (it.ver === "v10" ? `<span class="pill-v10">v1.0</span>` : "")))));
         const cleanName = it.name
-          .replace(" [对照]", "").replace(" [历史]", "").replace(" + 融合", "").replace(" 纯文本", "")
+          .replace(" [对照]", "").replace(" [历史]", "").replace(" + 融合", "").replace(" 纯文本", "").replace(" · 评论原生", "").replace(" · 纯文本", "")
           .replace("离线 12 层教师 (ELECTRA-180g FP32)", "12L 离线教师 (ELECTRA FP32)")
           .replace("启发式规则基线（含高阶账号保护）", "启发式规则基线 (高阶保护)");
-        const msDisp = it.ver === "ref" ? "离线" : (s.ms < 1 ? "<1ms" : s.ms.toFixed(1) + "ms");
-        const sizeDisp = it.tier === "rules" ? "0 MB" : (it.size >= 100 ? it.size.toFixed(0) + "M" : it.size.toFixed(it.size < 5 ? 2 : 1) + "M");
+        const msDisp = it.ver === "ref" ? "离线" : (s.ms < 0.2 ? s.ms.toFixed(3) + "ms" : (s.ms < 1 ? "<1ms" : s.ms.toFixed(1) + "ms"));
+        const sizeDisp = it.sizeLabel ? it.sizeLabel : (it.tier === "rules" ? "0 MB" : (it.size >= 100 ? it.size.toFixed(0) + "M" : it.size.toFixed(it.size < 5 ? 2 : 1) + "M"));
         return `
           <tr data-id="${it.id}" class="${isSel ? "sel" : ""} ${isOld ? "old" : ""}">
             <td class="fw-b ${idx === 0 ? "c-pri" : "muted"}">${idx + 1}</td>
@@ -989,7 +1045,18 @@
       const s = item.m, hw = HW_SPECS[item.hw];
 
       let posDenom, negDenom, examTitle;
-      if (bench === "b1") {
+      if (bench === "b3") {
+        const isFus = (item.track === "fusion" || item.track === "baseline");
+        if (exam === "full") {
+          posDenom = isFus ? 106 : 92;
+          negDenom = isFus ? 2881 : 2895;
+          examTitle = isFus ? "Bench-v3 Real 综合（106 账号AI / 2,881 真人）" : "Bench-v3 Real 纯文本（92 文本AI / 2,895 真人）";
+        } else {
+          posDenom = isFus ? 214 : 155;
+          negDenom = isFus ? 1220 : 1279;
+          examTitle = isFus ? "Bench-v3 Hard 综合（214 账号AI / 1,220 真人）" : "Bench-v3 Hard 纯文本（155 文本AI / 1,279 真人）";
+        }
+      } else if (bench === "b1") {
         posDenom = exam === "full" ? 310 : 160;
         negDenom = exam === "full" ? 1000 : 617;
         examTitle = exam === "full" ? "Bench-v1 完整集（310 AI / 1,000 真人）" : "Bench-v1 Hard-Only（160 隐蔽 AI / 617 高难真人）";
@@ -1057,15 +1124,16 @@
       const dataMin = Math.min(...vals), dataMax = Math.max(...vals);
       const rawSpan = Math.max(0.03, dataMax - dataMin);
       const step = rawSpan <= 0.08 ? 0.01 : (rawSpan <= 0.25 ? 0.02 : 0.05);
-      const yMax = Math.min(1.0, Math.ceil((dataMax + rawSpan * 0.22) / step) * step);
+      const yMax = dataMax >= 0.94 ? 1.0 : Math.min(1.0, Math.ceil((dataMax + rawSpan * 0.14) / step) * step);
       const yMin = Math.max(0.20, Math.floor((dataMin - rawSpan * 0.16) / step) * step);
       const ySpan = Math.max(0.04, yMax - yMin);
 
       const isSize = xAxis === "size";
-      const minV = isSize ? 0.90 : 1.5;
-      const maxV = isSize ? (bench === "b1" ? 680 : 120) : 380;
+      const hasRv2 = neural.some((x) => x.ver === "rules_v2");
+      const minV = isSize ? (hasRv2 ? 0.015 : 0.90) : (hasRv2 ? 0.035 : 1.5);
+      const maxV = isSize ? (bench === "b1" ? 680 : 80) : 260;
       const minLog = Math.log10(minV), maxLog = Math.log10(maxV);
-      const valXOf = (it) => isSize ? it.size : Math.min(340, it.m.ms);
+      const valXOf = (it) => isSize ? it.size : Math.min(250, it.m.ms);
       const xOf = (v) => pad.l + ((Math.log10(Math.max(minV, Math.min(maxV, v))) - minLog) / (maxLog - minLog)) * pw;
       const yOf = (v) => pad.t + ((yMax - Math.max(yMin, Math.min(yMax, v))) / ySpan) * ph;
 
@@ -1079,9 +1147,9 @@
         </defs>
       `];
 
-      const swX1 = xOf(isSize ? 1.0 : 1.65), swX2 = xOf(isSize ? 65 : 65);
+      const swX1 = xOf(isSize ? (hasRv2 ? 0.02 : 1.0) : (hasRv2 ? 0.04 : 1.65)), swX2 = xOf(isSize ? 55 : 55);
       parts.push(`<rect x="${swX1.toFixed(1)}" y="${pad.t}" width="${(swX2 - swX1).toFixed(1)}" height="${(ph * 0.56).toFixed(1)}" rx="12" fill="url(#sweet-grad)" stroke="var(--success)" stroke-opacity="0.24" stroke-dasharray="5 4"/>`);
-      parts.push(`<text x="${(swX1 + 10).toFixed(1)}" y="${pad.t - 10}" fill="var(--success)" font-size="11.5" font-weight="700">${isSize ? "端侧轻量区间（1.22–49.5 MB · 纯 CPU 推理）" : "端侧实时响应区间（2.0–60 ms / 20 条整页）"}</text>`);
+      parts.push(`<text x="${(swX1 + 10).toFixed(1)}" y="${pad.t - 10}" fill="var(--success)" font-size="11.5" font-weight="700">${isSize ? (hasRv2 ? "全端侧轻量区间（29 KB 纯ES5 JS – 49.5 MB ONNX）" : "端侧轻量区间（1.22–49.5 MB · 纯 CPU 推理）") : (hasRv2 ? "微秒至实时响应区间（0.05 ms Rules v2 – 55 ms ONNX）" : "端侧实时响应区间（1.9–60 ms / 20 条整页）")}</text>`);
 
       const staticObstacles = [];
       if (isSize && bench === "b1") {
@@ -1102,15 +1170,15 @@
       }
 
       const xTicks = isSize
-        ? (bench === "b1" ? [1.22, 3, 7.05, 16.86, 50, 100, 200, 400] : [1.22, 2, 4, 7.05, 16.86, 30, 50, 80])
-        : [2.0, 5, 10, 24.2, 52.4, 100, 161.3, 250];
+        ? (hasRv2 ? [0.029, 0.1, 1.22, 7.05, 16.86, 50] : (bench === "b1" ? [1.22, 3, 7.05, 16.86, 50, 100, 400] : [1.22, 4, 7.05, 16.86, 50]))
+        : (hasRv2 ? [0.05, 0.2, 1.89, 5, 24.3, 52.8, 157.4] : [1.89, 5, 10, 24.3, 52.8, 157.4]);
       xTicks.forEach((xv) => {
         const x = xOf(xv);
-        const isTier = isSize ? (xv === 1.22 || xv === 7.05 || xv === 16.86 || xv === 50) : (xv === 2.0 || xv === 24.2 || xv === 52.4 || xv === 161.3);
+        const isTier = isSize ? (xv === 0.029 || xv === 1.22 || xv === 7.05 || xv === 16.86 || xv === 50) : (xv === 0.05 || xv === 1.89 || xv === 24.3 || xv === 157.4);
         parts.push(`<line x1="${x.toFixed(1)}" y1="${pad.t}" x2="${x.toFixed(1)}" y2="${H - pad.b}" stroke="${isTier ? "var(--primary)" : "var(--border)"}" stroke-width="0.9" stroke-dasharray="3 3" opacity="${isTier ? 0.35 : 0.55}"/>`);
         const lbl = isSize
-          ? (xv === 1.22 ? "1.22M" : (xv === 7.05 ? "7M" : (xv === 16.86 ? "17M" : xv + "M")))
-          : (xv + "ms");
+          ? (xv < 0.05 ? "29KB" : (xv < 1 ? Math.round(xv * 1024) + "KB" : (xv === 1.22 ? "1.22M" : (xv === 7.05 ? "7M" : (xv === 16.86 ? "17M" : xv + "M")))))
+          : (xv < 1 ? xv + "ms" : (xv === 1.89 ? "1.9ms" : Math.round(xv) + "ms"));
         parts.push(`<text x="${x.toFixed(1)}" y="${H - pad.b + 18}" fill="${isTier ? "var(--foreground)" : "var(--muted-foreground)"}" font-size="11" font-weight="${isTier ? 700 : 400}" text-anchor="middle" font-family="monospace">${lbl}</text>`);
       });
 
@@ -1132,7 +1200,7 @@
 
       // Frontier curves for v1.2 (single models in size view, all v12 incl cascade in latency view)
       function drawFrontier(trackName, colorVar, shaded) {
-        const pts = neural.filter((it) => it.ver === "v12" && it.track === trackName && (!isSize || it.tier !== "cascade"))
+        const pts = neural.filter((it) => (it.ver === "v13" || it.ver === "rules_v2") && it.track === trackName && (!isSize || it.tier !== "cascade"))
           .sort((a, b) => valXOf(a) - valXOf(b));
         const front = [];
         let bestY = -1;
@@ -1152,9 +1220,9 @@
       if (track === "all" || track === "text") drawFrontier("text", "var(--primary)", false);
 
       // Compare arrows from v1.1 -> v1.2
-      if (verMode !== "v12" && isSize) {
+      if (verMode !== "v13" && isSize) {
         const byId = Object.fromEntries(neural.map((x) => [x.id, x]));
-        neural.filter((it) => it.ver === "v12" && it.pairPrev && byId[it.pairPrev]).forEach((v12) => {
+        neural.filter((it) => it.ver === "v13" && it.pairPrev && byId[it.pairPrev]).forEach((v12) => {
           const v11 = byId[v12.pairPrev];
           const x = xOf(v12.size), y1 = yOf(v11.m[yAxis]), y2 = yOf(v12.m[yAxis]);
           if (Math.abs(y1 - y2) > 12) {
@@ -1173,7 +1241,8 @@
       const placedPills = [];
       const toLabel = plotDots.filter((it) => {
         if (it.id === selectedId) return true;
-        if (it.ver === "v10" || it.ver === "v11") return false;
+        if (it.ver === "v10" || it.ver === "v11" || it.ver === "v12") return false;
+        if (it.id === "rules_v2_compact_txt" || it.id === "cas13_l2d_15_fus" || it.id === "cas13_l2d_15_txt") return false;
         if (isSize && it.tier === "cascade") return false;
         if (it.id === "cas_l2d10_txt") return false;
         return true;
@@ -1212,10 +1281,10 @@
         pillMap.set(it.id, best);
       });
 
-      const orderedDots = [...plotDots].sort((a, b) => ((a.ver === "v10" || a.ver === "v11") ? 0 : 1) - ((b.ver === "v10" || b.ver === "v11") ? 0 : 1));
+      const orderedDots = [...plotDots].sort((a, b) => ((a.ver === "v10" || a.ver === "v11" || a.ver === "v12") ? 0 : 1) - ((b.ver === "v10" || b.ver === "v11" || b.ver === "v12") ? 0 : 1));
       orderedDots.forEach((it) => {
         const cx = xOf(valXOf(it)), cy = yOf(it.m[yAxis]);
-        const isSel = it.id === selectedId, isOld = (it.ver === "v10" || it.ver === "v11"), isCas = it.tier === "cascade";
+        const isSel = it.id === selectedId, isOld = (it.ver === "v10" || it.ver === "v11" || it.ver === "v12"), isCas = it.tier === "cascade";
         const col = it.ver === "ref" ? "var(--warning)" : (isCas ? "var(--accent)" : (it.track === "fusion" ? "var(--success)" : "var(--primary)"));
         if (isSel) parts.push(`<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="13" fill="${col}" fill-opacity="0.20"/>`);
         if (it.ver === "ref") {
@@ -1294,7 +1363,138 @@
       });
     }
 
-    function renderAll() { renderControls(); renderTable(); renderDetail(); renderPareto(); }
+
+    function renderV3AgeChart() {
+      const svg = document.getElementById("v3-age-svg");
+      const tip = document.getElementById("v3-age-tip");
+      if (!svg || bench !== "b3") return;
+      const W = 600, H = 320, pad = { l: 48, r: 16, t: 28, b: 64 };
+      const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+      const isFpr = ageMode === "fpr";
+      const yMax = isFpr ? 0.010 : 1.00;
+      const ticks = isFpr ? [0, 0.002, 0.004, 0.006, 0.008, 0.010] : [0, 0.25, 0.50, 0.75, 1.00];
+      const yOf = (v) => pad.t + (1 - Math.min(yMax, Math.max(0, v)) / yMax) * ph;
+
+      const parts = [];
+      ticks.forEach((tv) => {
+        const yy = yOf(tv);
+        parts.push(`<line x1="${pad.l}" y1="${yy.toFixed(1)}" x2="${W - pad.r}" y2="${yy.toFixed(1)}" stroke="var(--border)" stroke-width="0.9" stroke-dasharray="${tv === 0 ? "" : "3 3"}"/>`);
+        parts.push(`<text x="${pad.l - 7}" y="${(yy + 3.5).toFixed(1)}" text-anchor="end" fill="var(--muted-foreground)" font-size="10" font-family="monospace">${isFpr ? (tv * 100).toFixed(1) + "%" : (tv * 100).toFixed(0) + "%"}</text>`);
+      });
+      parts.push(`<rect x="${pad.l}" y="${pad.t}" width="${pw}" height="${ph}" fill="none" stroke="var(--border)"/>`);
+
+      const bands = V3_EXTRAS.age.bands, sers = V3_EXTRAS.age.series;
+      const gw = pw / bands.length, bw = 18, gb = 4, tb = sers.length * bw + (sers.length - 1) * gb;
+      bands.forEach((b, bi) => {
+        const gx = pad.l + bi * gw + (gw - tb) / 2;
+        const cx = pad.l + (bi + 0.5) * gw;
+        parts.push(`<text x="${cx.toFixed(1)}" y="${H - pad.b + 16}" text-anchor="middle" fill="var(--foreground)" font-size="10.8" font-weight="700">${b.label}</text>`);
+        parts.push(`<text x="${cx.toFixed(1)}" y="${H - pad.b + 30}" text-anchor="middle" fill="var(--muted-foreground)" font-size="9.5" font-family="monospace">${b.n}条 (${b.pos} AI)</text>`);
+        sers.forEach((s, si) => {
+          const d = s.data[b.key];
+          const val = isFpr ? d.fpr : d.recall;
+          const bh = isFpr ? (d.fp > 0 ? Math.max(4, (Math.min(val, yMax) / yMax) * ph) : 2.5) : (val / yMax) * ph;
+          const bx = gx + si * (bw + gb), by = pad.t + ph - bh;
+          parts.push(`<rect class="v3-bar" data-bi="${bi}" data-si="${si}" x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${bw}" height="${bh.toFixed(1)}" rx="3" fill="${s.col}" fill-opacity="${isFpr && d.fp === 0 ? 0.35 : 0.92}" style="cursor:pointer;"/>`);
+          if (!isFpr) {
+            const ly = val >= 0.92 ? Math.max(pad.t + 11, by + 11) : by - 3;
+            const lc = val >= 0.92 ? "#06101d" : s.col;
+            parts.push(`<text x="${(bx + bw / 2).toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" fill="${lc}" font-size="8.6" font-weight="800" font-family="monospace" pointer-events="none">${Math.round(val * 100)}</text>`);
+          } else {
+            parts.push(`<text x="${(bx + bw / 2).toFixed(1)}" y="${(by - 4).toFixed(1)}" text-anchor="middle" fill="${d.fp === 0 ? "var(--success)" : s.col}" font-size="8.6" font-weight="700" font-family="monospace" pointer-events="none">${d.fp === 0 ? "0" : (val * 100).toFixed(2)}</text>`);
+          }
+        });
+      });
+
+      let lx = pad.l;
+      sers.forEach((s) => {
+        parts.push(`<rect x="${lx.toFixed(1)}" y="${H - 18}" width="10" height="10" rx="2.5" fill="${s.col}"/>`);
+        parts.push(`<text x="${(lx + 14).toFixed(1)}" y="${H - 9}" fill="var(--muted-foreground)" font-size="10.2" font-weight="600">${s.short}</text>`);
+        lx += estTextWidth(s.short) + 28;
+      });
+      svg.innerHTML = parts.join("");
+      svg.querySelectorAll(".v3-bar").forEach((el) => {
+        el.addEventListener("mouseenter", (e) => {
+          const b = bands[+el.dataset.bi], s = sers[+el.dataset.si], d = s.data[b.key];
+          tip.innerHTML = `<div class="fw-b c-fg">${s.name}</div><div class="muted">${b.label}（${d.n} 条 · ${d.pos} AI）</div><div class="tip-grid"><span>召回率: <strong class="c-suc">${(d.recall * 100).toFixed(1)}%</strong> (${d.tp}/${d.pos})</span><span>误杀率: <strong class="${d.fp === 0 ? "c-suc" : "c-warn"}">${(d.fpr * 100).toFixed(2)}%</strong> (${d.fp} FP)</span></div>`;
+          const box = svg.parentElement.getBoundingClientRect();
+          const ex = e.clientX - box.left, ey = e.clientY - box.top;
+          tip.style.left = (ex + 14 + 260 > box.width ? Math.max(6, ex - 265) : ex + 14) + "px";
+          tip.style.top = Math.max(6, ey - 20) + "px";
+          tip.style.opacity = "1";
+        });
+        el.addEventListener("mouseleave", () => { tip.style.opacity = "0"; });
+      });
+    }
+
+    function renderV3OobChart() {
+      const svg = document.getElementById("v3-oob-svg");
+      const tip = document.getElementById("v3-oob-tip");
+      if (!svg || bench !== "b3") return;
+      const W = 600, H = 320, pad = { l: 48, r: 16, t: 24, b: 46 };
+      const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+      const xOf = (f) => pad.l + (Math.min(0.40, Math.max(0, f)) / 0.40) * pw;
+      const yOf = (r) => pad.t + ((1.00 - Math.min(1.00, Math.max(0.40, r))) / 0.60) * ph;
+      const parts = [];
+      parts.push(`<rect x="${pad.l}" y="${pad.t}" width="${(xOf(0.03) - pad.l).toFixed(1)}" height="${(yOf(0.85) - pad.t).toFixed(1)}" fill="var(--success)" fill-opacity="0.14"/>`);
+      parts.push(`<rect x="${xOf(0.15).toFixed(1)}" y="${pad.t}" width="${(W - pad.r - xOf(0.15)).toFixed(1)}" height="${ph}" fill="var(--error)" fill-opacity="0.08"/>`);
+      parts.push(`<text x="${((xOf(0.15) + W - pad.r) / 2).toFixed(1)}" y="${pad.t + 16}" text-anchor="middle" fill="var(--error)" font-size="10.2" font-weight="700">社区规则高误杀区 (15%–40%)</text>`);
+      [0.40, 0.55, 0.70, 0.85, 1.00].forEach((v) => {
+        const yy = yOf(v);
+        parts.push(`<line x1="${pad.l}" y1="${yy.toFixed(1)}" x2="${W - pad.r}" y2="${yy.toFixed(1)}" stroke="var(--border)" stroke-width="0.9" stroke-dasharray="${v === 0.40 ? "" : "3 3"}"/>`);
+        parts.push(`<text x="${pad.l - 7}" y="${(yy + 3.5).toFixed(1)}" text-anchor="end" fill="var(--muted-foreground)" font-size="10" font-family="monospace">${Math.round(v * 100)}%</text>`);
+      });
+      [0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40].forEach((f) => {
+        const xx = xOf(f);
+        parts.push(`<line x1="${xx.toFixed(1)}" y1="${pad.t}" x2="${xx.toFixed(1)}" y2="${H - pad.b}" stroke="var(--border)" stroke-width="0.9" stroke-dasharray="3 3" opacity="0.6"/>`);
+        parts.push(`<text x="${xx.toFixed(1)}" y="${H - pad.b + 15}" text-anchor="middle" fill="var(--muted-foreground)" font-size="10" font-family="monospace">${Math.round(f * 100)}%</text>`);
+      });
+      parts.push(`<rect x="${pad.l}" y="${pad.t}" width="${pw}" height="${ph}" fill="none" stroke="var(--border)"/>`);
+      parts.push(`<text x="${(pad.l + pw / 2).toFixed(1)}" y="${H - 10}" text-anchor="middle" fill="var(--muted-foreground)" font-size="11">高难真人长评误杀率 Hard Human FPR（0% 贴齐左轴，越左越安全）</text>`);
+
+      const pts = V3_EXTRAS.oob;
+      const commPts = pts.filter((p) => p.kind === "comm");
+      parts.push(`<polyline points="${commPts.map((p) => `${xOf(p.hh_fpr).toFixed(1)},${yOf(p.recall).toFixed(1)}`).join(" ")}" fill="none" stroke="var(--error)" stroke-width="1.6" stroke-dasharray="4 3"/>`);
+
+      const hints = {
+        o_nano: [22, 2], o_pro: [22, 16], o_rpro: [22, 24], o_rlite: [22, 42], o_rcomp: [22, 62],
+        o_b_cup: [-65, 22], o_b_std: [-70, -20], o_b_kill: [-190, -16],
+      };
+      pts.forEach((p) => {
+        const cx = xOf(p.hh_fpr), cy = yOf(p.recall);
+        const [dx, dy] = hints[p.id] || [14, 0];
+        const lx = Math.max(pad.l + 6, Math.min(W - pad.r - 175, cx + dx));
+        const ly = Math.max(pad.t + 6, Math.min(H - pad.b - 20, cy + dy));
+        const lw = estTextWidth(p.label) + 12;
+        parts.push(`<line x1="${cx.toFixed(1)}" y1="${cy.toFixed(1)}" x2="${(cx < lx ? lx : lx + lw).toFixed(1)}" y2="${(ly + 9).toFixed(1)}" stroke="${p.col}" stroke-opacity="0.55" stroke-width="1"/>`);
+        if (p.kind === "rule") {
+          parts.push(`<circle class="v3-pt" data-id="${p.id}" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="6" fill="${p.col}" stroke="var(--card)" stroke-width="1.5" style="cursor:pointer;"/>`);
+        } else if (p.kind === "comm") {
+          parts.push(`<polygon class="v3-pt" data-id="${p.id}" points="${cx.toFixed(1)},${(cy - 6.5).toFixed(1)} ${(cx + 6.5).toFixed(1)},${(cy + 5.5).toFixed(1)} ${(cx - 6.5).toFixed(1)},${(cy + 5.5).toFixed(1)}" fill="${p.col}" stroke="var(--card)" stroke-width="1.4" style="cursor:pointer;"/>`);
+        } else {
+          parts.push(`<circle class="v3-pt" data-id="${p.id}" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="5.5" fill="${p.col}" stroke="var(--card)" stroke-width="1.5" style="cursor:pointer;"/>`);
+        }
+        parts.push(`<rect x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" width="${lw.toFixed(1)}" height="18" rx="4" fill="var(--card)" fill-opacity="0.93" stroke="${p.col}" stroke-opacity="0.55" stroke-width="1"/>`);
+        parts.push(`<text x="${(lx + lw / 2).toFixed(1)}" y="${(ly + 12.2).toFixed(1)}" text-anchor="middle" fill="${p.col}" font-size="9.6" font-weight="700">${p.label}</text>`);
+      });
+      svg.innerHTML = parts.join("");
+      const byId = Object.fromEntries(pts.map((p) => [p.id, p]));
+      svg.querySelectorAll(".v3-pt").forEach((el) => {
+        el.addEventListener("mouseenter", (e) => {
+          const p = byId[el.dataset.id];
+          tip.innerHTML = `<div class="fw-b c-fg">${p.name}</div><div class="tip-grid"><span>精确率: <strong class="c-suc">${(p.precision * 100).toFixed(1)}%</strong></span><span>召回率: <strong class="c-pri">${(p.recall * 100).toFixed(1)}%</strong></span><span>高难误杀: <strong class="${p.hh_fpr === 0 ? "c-suc" : "c-err"}">${(p.hh_fpr * 100).toFixed(2)}%</strong></span><span>命中/误判: <strong>${p.tp} / ${p.fp}</strong></span></div>`;
+          const box = svg.parentElement.getBoundingClientRect();
+          const ex = e.clientX - box.left, ey = e.clientY - box.top;
+          tip.style.left = (ex + 14 + 260 > box.width ? Math.max(6, ex - 265) : ex + 14) + "px";
+          tip.style.top = Math.max(6, ey - 20) + "px";
+          tip.style.opacity = "1";
+        });
+        el.addEventListener("mouseleave", () => { tip.style.opacity = "0"; });
+      });
+    }
+
+    function renderAll() { renderControls(); renderTable(); renderDetail(); renderPareto(); renderV3AgeChart(); renderV3OobChart(); }
+    document.querySelectorAll('.age-btn').forEach((b) => b.addEventListener('click', () => { ageMode = b.dataset.agemode; renderControls(); renderV3AgeChart(); }));
 
     document.querySelectorAll(".bench-btn").forEach((b) => b.addEventListener("click", () => { bench = b.dataset.bench; renderAll(); }));
     document.querySelectorAll(".exam-btn").forEach((b) => b.addEventListener("click", () => { exam = b.dataset.exam; renderAll(); }));
@@ -1334,7 +1534,7 @@
         size:   { tag: "模型体积 · 越小越轻", text: "推理权重磁盘体积（MB）；纯规则脚本标为规则，HF 模型为 FP32 权重体积，Qwen 为 Q4 端侧估算体积。" },
       };
 
-      const A_DATA = [
+      const A_DATA = [...[{"id": "oj_cas13_fus", "name": "Nano→Pro v1.3 级联 (Naive 15% + 融合)", "short": "v1.3 级联融合", "camp": "cas", "track": "fusion", "size": 50.71, "note": "v1.3 两级级联 · B1全时最高", "full": {"pr_auc": 0.99375, "roc_auc": 0.99789, "f05": 0.9762, "f1": 0.9692, "r95": 0.971, "r99": 0.8677, "stealth95": 0.9607, "hard_fpr95": 0.01546, "caught95": 301, "fp95": 15, "caught99": 269, "fp99": 2}, "hard": {"pr_auc": 0.97996, "roc_auc": 0.99409, "f05": 0.953, "f1": 0.9434, "r95": 0.9187, "r99": 0.7375, "stealth95": 0.931, "hard_fpr95": 0.00336, "caught95": 147, "fp95": 7, "caught99": 118, "fp99": 1}}, {"id": "oj_pro13_fus", "name": "OjinjinNet-Pro v1.3 (+1KB融合)", "short": "Pro v1.3 融合", "camp": "ours", "track": "fusion", "size": 49.49, "note": "v1.3 SmoothQuant INT8", "full": {"pr_auc": 0.99454, "roc_auc": 0.99825, "f05": 0.9739, "f1": 0.9691, "r95": 0.971, "r99": 0.8613, "stealth95": 0.9607, "hard_fpr95": 0.01546, "caught95": 300, "fp95": 15, "caught99": 267, "fp99": 2}, "hard": {"pr_auc": 0.98188, "roc_auc": 0.99512, "f05": 0.9495, "f1": 0.9397, "r95": 0.925, "r99": 0.7312, "stealth95": 0.931, "hard_fpr95": 0.00336, "caught95": 148, "fp95": 7, "caught99": 117, "fp99": 1}}, {"id": "oj_rv2_pro", "name": "OjinjinRules v2.0 Pro (43.8KB 纯ES5 JS)", "short": "Rules-v2 Pro 44KB", "camp": "rules_v2", "track": "fusion", "size": 0.043, "note": "0依赖 · 0.072ms/20条 · 纯ES5 JS", "full": {"pr_auc": 0.98698, "roc_auc": 0.99693, "f05": 0.9682, "f1": 0.9665, "r95": 0.9774, "r99": 0.8581, "stealth95": 0.9719, "hard_fpr95": 0.01391, "caught95": 303, "fp95": 14, "caught99": 266, "fp99": 2}, "hard": {"pr_auc": 0.96522, "roc_auc": 0.99279, "f05": 0.9375, "f1": 0.9358, "r95": 0.8688, "r99": 0.0, "stealth95": 0.8621, "hard_fpr95": 0.00504, "caught95": 138, "fp95": 7, "caught99": 0, "fp99": 0}}, {"id": "oj_rv2_lite", "name": "OjinjinRules v2.0 Lite (29.1KB 0树 JS)", "short": "Rules-v2 Lite 29KB", "camp": "rules_v2", "track": "fusion", "size": 0.028, "note": "0树纯线性 · 0.048ms/20条", "full": {"pr_auc": 0.99091, "roc_auc": 0.99723, "f05": 0.968, "f1": 0.9645, "r95": 0.971, "r99": 0.7613, "stealth95": 0.9607, "hard_fpr95": 0.01236, "caught95": 300, "fp95": 15, "caught99": 236, "fp99": 2}, "hard": {"pr_auc": 0.96908, "roc_auc": 0.99255, "f05": 0.9375, "f1": 0.9313, "r95": 0.8812, "r99": 0.3812, "stealth95": 0.8879, "hard_fpr95": 0.00336, "caught95": 140, "fp95": 7, "caught99": 61, "fp99": 0}}, {"id": "oj_rv2_pro_txt", "name": "OjinjinRules v2.0 Pro (43.8KB 纯文本)", "short": "Rules-v2 Pro 纯文", "camp": "rules_v2", "track": "text", "size": 0.043, "note": "零元信息纯文本静态规则", "full": {"pr_auc": 0.96361, "roc_auc": 0.98932, "f05": 0.9307, "f1": 0.9163, "r95": 0.8355, "r99": 0.6419, "stealth95": 0.8258, "hard_fpr95": 0.017, "caught95": 258, "fp95": 13, "caught99": 199, "fp99": 2}, "hard": {"pr_auc": 0.93789, "roc_auc": 0.98538, "f05": 0.9006, "f1": 0.8896, "r95": 0.7375, "r99": 0.0, "stealth95": 0.7328, "hard_fpr95": 0.01008, "caught95": 117, "fp95": 6, "caught99": 0, "fp99": 0}}],
         { id:"oj_pro_fus", name:"OjinjinNet-Pro v1.2 (+1KB融合)", short:"Pro v1.2 融合", camp:"ours", track:"fusion", size:49.49, note:"纯CPU ONNX INT8", full:{ pr_auc:0.99363, r99:0.8323, r95:0.9677, f05:0.9717, stealth95:0.9375, hard_fpr95:0.0243, caught95:300, fp95:15 }, hard:{ pr_auc:0.97846, r99:0.7125, r95:0.9062, f05:0.9440, stealth95:0.9062, hard_fpr95:0.0113 } },
         { id:"oj_cas15_fus", name:"Nano→Pro v1.2 级联 (L2D 15% + 融合)", short:"级联 L2D 15% 融合", camp:"cas", track:"fusion", size:50.71, note:"53.8ms · R@P95 97.4%", full:{ pr_auc:0.99265, r99:0.8548, r95:0.9742, f05:0.9658, stealth95:0.9500, hard_fpr95:0.0243, caught95:302, fp95:15 }, hard:{ pr_auc:0.97557, r99:0.7438, r95:0.8438, f05:0.9326, stealth95:0.8438, hard_fpr95:0.0113 } },
         { id:"oj_lite_fus", name:"OjinjinNet-Lite v1.2 (+1KB融合)", short:"Lite v1.2 融合", camp:"ours", track:"fusion", size:7.05, note:"纯CPU ONNX INT8", full:{ pr_auc:0.99366, r99:0.8871, r95:0.9581, f05:0.9705, stealth95:0.9187, hard_fpr95:0.0243, caught95:297, fp95:15 }, hard:{ pr_auc:0.97872, r99:0.7500, r95:0.8625, f05:0.9410, stealth95:0.8625, hard_fpr95:0.0113 } },
@@ -1448,7 +1648,7 @@
         const W = 1000, H = 430, pad = { l: 64, r: 28, t: 36, b: 52 };
         const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
 
-        const neural = A_DATA.filter((d) => d.camp !== "bili_js" && d.camp !== "cas");
+        const neural = A_DATA.filter((d) => d.camp !== "bili_js" && d.camp !== "cas" && d.camp !== "rules_v2");
         const minLog = Math.log10(0.95), maxLog = Math.log10(1500);
         const xOf = (mb) => pad.l + ((Math.log10(Math.max(0.95, mb)) - minLog) / (maxLog - minLog)) * pw;
         const yOf = (v) => pad.t + (1 - Math.min(1.0, Math.max(0, v))) * ph;
@@ -1581,11 +1781,12 @@
         const yOf = (rec) => pad.t + (1 - Math.min(1.0, Math.max(0, rec))) * ph;
 
         const allPts = [
-          { id:"bf_cas_fus", name:"Nano→Pro v1.2 级联 (L2D 15% + 融合)", label:"级联 15% 融合 (95.0%)", fpr:0.0243, rec:0.9500, prec:0.9527, allRec:0.9742, tp:302, fp:15, kind:"ours", col:"var(--success)", prio:10 },
-          { id:"bf_pro_txt", name:"OjinjinNet-Pro v1.2 (纯文本)", label:"Pro v1.2 纯文本 (93.1%)", fpr:0.0227, rec:0.9313, prec:0.9511, allRec:0.9419, tp:292, fp:15, kind:"ours", col:"var(--primary)", prio:9 },
-          { id:"bf_nano_fus", name:"OjinjinNet-Nano v1.2 (1.22MB + 融合)", label:"Nano 1.22MB 融合 (92.5%)", fpr:0.0243, rec:0.9250, prec:0.9521, allRec:0.9613, tp:298, fp:15, kind:"ours", col:"var(--success)", prio:8 },
-          { id:"bf_lite_txt", name:"OjinjinNet-Lite v1.2 (7MB 纯文本)", label:"Lite 7MB 纯文本 (88.8%)", fpr:0.0130, rec:0.8875, prec:0.9500, allRec:0.9194, tp:285, fp:15, kind:"ours", col:"var(--primary)", prio:8 },
-          { id:"bf_nano_txt", name:"OjinjinNet-Nano v1.2 (1.22MB 纯文本)", label:"Nano 1.22MB 纯文本 (84.4%)", fpr:0.0194, rec:0.8438, prec:0.9505, allRec:0.8677, tp:269, fp:14, kind:"ours", col:"var(--primary)", prio:7 },
+          { id:"bf_rv2_pro", name:"OjinjinRules v2.0 Pro (43.8KB 纯ES5 JS)", label:"Rules-v2 Pro 44KB (97.2% / 误杀1.4%)", fpr:0.0139, rec:0.9719, prec:0.9558, allRec:0.9774, tp:303, fp:14, kind:"ours", col:"var(--success)", prio:12 },
+          { id:"bf_rv2_lite", name:"OjinjinRules v2.0 Lite (29.1KB 0树 JS)", label:"", fpr:0.0124, rec:0.9607, prec:0.9524, allRec:0.9710, tp:300, fp:15, kind:"ours", col:"var(--success)", prio:5 },
+          { id:"bf_cas_fus", name:"Nano→Pro v1.3 级联 (Naive 15% + 融合)", label:"v1.3 级联融合 (96.1% / 误杀1.5%)", fpr:0.0155, rec:0.9607, prec:0.9525, allRec:0.9710, tp:301, fp:15, kind:"ours", col:"var(--accent)", prio:11 },
+          { id:"bf_pro_txt", name:"OjinjinNet-Pro v1.3 (纯文本)", label:"Pro v1.3 纯文本 (95.5%)", fpr:0.0170, rec:0.9551, prec:0.9515, allRec:0.9516, tp:294, fp:15, kind:"ours", col:"var(--primary)", prio:9 },
+          { id:"bf_lite_txt", name:"OjinjinNet-Lite v1.3 (7MB 纯文本)", label:"", fpr:0.0139, rec:0.9157, prec:0.9533, allRec:0.9226, tp:286, fp:14, kind:"ours", col:"var(--primary)", prio:4 },
+          { id:"bf_nano_txt", name:"OjinjinNet-Nano v1.3 (1.22MB 纯文本)", label:"Nano v1.3 纯文本 (90.5%)", fpr:0.0201, rec:0.9045, prec:0.9507, allRec:0.8742, tp:270, fp:14, kind:"ours", col:"var(--primary)", prio:8 },
 
           { id:"bf_d_def", name:"社区规则插件 D [默认≥70]", label:"插件 D 默认 (19.4%)", fpr:0.0113, rec:0.1938, prec:0.9583, allRec:0.5194, tp:161, fp:7, kind:"def", col:"var(--warning)", prio:7 },
           { id:"bf_a_def", name:"社区规则插件 A [默认≥60]", label:"插件 A 默认档 (1.2%)", fpr:0.0227, rec:0.0125, prec:0.9136, allRec:0.4774, tp:148, fp:14, kind:"def", col:"var(--warning)", prio:8 },
@@ -1714,7 +1915,7 @@
 
       function renderArenaTable() {
         const filtered = A_DATA.filter((d) => {
-          if (aCamp === "bili_js") return d.camp === "ours" || d.camp === "cas" || d.camp === "bili_js";
+          if (aCamp === "bili_js") return d.camp === "rules_v2" || d.camp === "ours" || d.camp === "cas" || d.camp === "bili_js";
           if (aCamp === "neural") return d.camp === "ours" || d.camp === "cas" || d.camp === "hf_neural" || d.camp === "mobile_llm";
           if (aCamp === "text_only") return d.track === "text";
           return true;
@@ -1726,6 +1927,7 @@
 
         document.getElementById("a-row-count").textContent = `当前显示 ${filtered.length} / ${A_DATA.length} 组`;
         const badges = {
+          rules_v2: `<span class="camp-badge camp-rv2">Rules v2</span>`,
           ours: `<span class="camp-badge camp-ours">OjinjinNet</span>`,
           cas: `<span class="camp-badge camp-cas">两级级联</span>`,
           bili_js: `<span class="camp-badge camp-rule">社区规则</span>`,
@@ -1736,7 +1938,7 @@
         document.getElementById("a-master-tbody").innerHTML = filtered.map((d, i) => {
           const m = d[aExam];
           let ootbTxt = `<span class="muted">${d.note}</span>`;
-          if ((d.camp === "ours" || d.camp === "cas") && aExam === "full") {
+          if ((d.camp === "ours" || d.camp === "cas" || d.camp === "rules_v2") && aExam === "full") {
             ootbTxt = `<span class="c-suc">P95 隐蔽 ${pct(m.stealth95)} · 误杀 ${pct(m.hard_fpr95, 2)} (${m.caught95}中/${m.fp95}误)</span>`;
           } else if (d.ootb && d.ootb.default_pred) {
             const o = d.ootb.default_pred;
@@ -1752,7 +1954,7 @@
               <td class="fw-b ${m.r95 >= 0.80 ? "c-suc" : (m.r95 === 0 ? "c-err" : "")}">${pct(m.r95)}</td>
               <td>${pct(m.r99)}</td>
               <td style="text-align:left;font-size:11px;">${ootbTxt}</td>
-              <td>${d.size < 1 ? "规则" : (d.size >= 1000 ? (d.size / 1024).toFixed(2) + "GB" : d.size.toFixed(d.size < 5 ? 2 : 1) + "M")}</td>
+              <td>${d.camp === "rules_v2" ? (d.size * 1024).toFixed(1) + "KB" : (d.size < 1 ? "规则" : (d.size >= 1000 ? (d.size / 1024).toFixed(2) + "GB" : d.size.toFixed(d.size < 5 ? 2 : 1) + "M"))}</td>
             </tr>
           `;
         }).join("");

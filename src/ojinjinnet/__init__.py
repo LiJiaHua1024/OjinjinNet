@@ -3,4 +3,4 @@
 from .infer import OjinjinCascadeClassifier, OjinjinClassifier, WordPieceTokenizer
 
 __all__ = ["OjinjinCascadeClassifier", "OjinjinClassifier", "WordPieceTokenizer"]
-__version__ = "1.2.0"
+__version__ = "1.3.0"

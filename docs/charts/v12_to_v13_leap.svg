@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1480 500" width="1480" height="500" role="img">
+<style>text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei UI", "PingFang SC", sans-serif; } .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }</style>
+<rect width="1480" height="500" rx="14" fill="#0D1117"/>
+<text x="30" y="38" fill="#F0F6FC" font-size="20" font-weight="800">第 3 轮主动学习 + 反稀释全量重训跃升（封存抗饱和考卷 Bench-v3 Hard · 1,434 条）</text>
+<text x="30" y="60" fill="#8B949E" font-size="12.5">灰色 = 上代 (v1.2 / Rules v1) · 亮色 = 新版 (v1.3 / Rules v2) · 横轴 0% 贴齐原点，100% 撑满右边界</text>
+<rect x="30.0" y="78.0" width="700.0" height="398.0" rx="12" fill="#161B22" stroke="#30363D"/>
+<text x="48.0" y="106.0" fill="#F0F6FC" font-size="14" font-weight="700">1. 纯文本语义排序 PR-AUC（同档对照 · 全系 7 档 100% 普涨）</text>
+<line x1="218.0" y1="124.0" x2="218.0" y2="438.0" stroke="#242B35" stroke-width="1"/>
+<text class="mono" x="218.0" y="454.0" text-anchor="middle" fill="#8B949E" font-size="10.5">0%</text>
+<line x1="302.4" y1="124.0" x2="302.4" y2="438.0" stroke="#242B35" stroke-width="1"/>
+<text class="mono" x="302.4" y="454.0" text-anchor="middle" fill="#8B949E" font-size="10.5">20%</text>
+<line x1="386.8" y1="124.0" x2="386.8" y2="438.0" stroke="#242B35" stroke-width="1"/>
+<text class="mono" x="386.8" y="454.0" text-anchor="middle" fill="#8B949E" font-size="10.5">40%</text>
+<line x1="471.2" y1="124.0" x2="471.2" y2="438.0" stroke="#242B35" stroke-width="1"/>
+<text class="mono" x="471.2" y="454.0" text-anchor="middle" fill="#8B949E" font-size="10.5">60%</text>
+<line x1="555.6" y1="124.0" x2="555.6" y2="438.0" stroke="#242B35" stroke-width="1"/>
+<text class="mono" x="555.6" y="454.0" text-anchor="middle" fill="#8B949E" font-size="10.5">80%</text>
+<line x1="640.0" y1="124.0" x2="640.0" y2="438.0" stroke="#242B35" stroke-width="1"/>
+<text class="mono" x="640.0" y="454.0" text-anchor="middle" fill="#8B949E" font-size="10.5">100%</text>
+<rect x="218.0" y="124.0" width="422.0" height="314.0" fill="none" stroke="#30363D"/>
+<text x="208.0" y="150.4" text-anchor="end" fill="#E6EDF3" font-size="11.5" font-weight="600">OjinjinNet-Pro (49.5MB)</text>
+<rect x="218.0" y="135.4" width="366.0" height="9" rx="3" fill="#475569"/>
+<rect x="218.0" y="147.4" width="375.2" height="12" rx="3.5" fill="#38BDF8"/>
+<text class="mono" x="648.0" y="155.4" fill="#38BDF8" font-size="11" font-weight="700">88.9%</text>
+<text class="mono" x="688.0" y="155.4" fill="#4ADE80" font-size="10.2" font-weight="700">(+2.2)</text>
+<text x="208.0" y="195.3" text-anchor="end" fill="#E6EDF3" font-size="11.5" font-weight="600">OjinjinNet-Std (16.9MB)</text>
+<rect x="218.0" y="180.3" width="298.4" height="9" rx="3" fill="#475569"/>
+<rect x="218.0" y="192.3" width="363.2" height="12" rx="3.5" fill="#38BDF8"/>
+<text class="mono" x="648.0" y="200.3" fill="#38BDF8" font-size="11" font-weight="700">86.1%</text>
+<text class="mono" x="688.0" y="200.3" fill="#4ADE80" font-size="10.2" font-weight="700">(+15.4)</text>
+<text x="208.0" y="240.1" text-anchor="end" fill="#E6EDF3" font-size="11.5" font-weight="600">OjinjinNet-Lite (7.05MB)</text>
+<rect x="218.0" y="225.1" width="343.2" height="9" rx="3" fill="#475569"/>
+<rect x="218.0" y="237.1" width="355.0" height="12" rx="3.5" fill="#38BDF8"/>
+<text class="mono" x="648.0" y="245.1" fill="#38BDF8" font-size="11" font-weight="700">84.1%</text>
+<text class="mono" x="688.0" y="245.1" fill="#4ADE80" font-size="10.2" font-weight="700">(+2.8)</text>
+<text x="208.0" y="285.0" text-anchor="end" fill="#E6EDF3" font-size="11.5" font-weight="600">OjinjinNet-Nano (1.22MB)</text>
+<rect x="218.0" y="270.0" width="314.8" height="9" rx="3" fill="#475569"/>
+<rect x="218.0" y="282.0" width="337.3" height="12" rx="3.5" fill="#38BDF8"/>
+<text class="mono" x="648.0" y="290.0" fill="#38BDF8" font-size="11" font-weight="700">79.9%</text>
+<text class="mono" x="688.0" y="290.0" fill="#4ADE80" font-size="10.2" font-weight="700">(+5.3)</text>
+<text x="208.0" y="329.9" text-anchor="end" fill="#E6EDF3" font-size="11.5" font-weight="600">Rules-Pro (43.8KB JS)</text>
+<rect x="218.0" y="314.9" width="337.1" height="9" rx="3" fill="#475569"/>
+<rect x="218.0" y="326.9" width="348.7" height="12" rx="3.5" fill="#3FB950"/>
+<text class="mono" x="648.0" y="334.9" fill="#3FB950" font-size="11" font-weight="700">82.6%</text>
+<text class="mono" x="688.0" y="334.9" fill="#4ADE80" font-size="10.2" font-weight="700">(+2.7)</text>
+<text x="208.0" y="374.7" text-anchor="end" fill="#E6EDF3" font-size="11.5" font-weight="600">Rules-Compact (38.6KB JS)</text>
+<rect x="218.0" y="359.7" width="325.8" height="9" rx="3" fill="#475569"/>
+<rect x="218.0" y="371.7" width="337.3" height="12" rx="3.5" fill="#3FB950"/>
+<text class="mono" x="648.0" y="379.7" fill="#3FB950" font-size="11" font-weight="700">79.9%</text>
+<text class="mono" x="688.0" y="379.7" fill="#4ADE80" font-size="10.2" font-weight="700">(+2.7)</text>
+<text x="208.0" y="419.6" text-anchor="end" fill="#E6EDF3" font-size="11.5" font-weight="600">Rules-Lite (29.1KB 0树JS)</text>
+<rect x="218.0" y="404.6" width="324.2" height="9" rx="3" fill="#475569"/>
+<rect x="218.0" y="416.6" width="334.8" height="12" rx="3.5" fill="#3FB950"/>
+<text class="mono" x="648.0" y="424.6" fill="#3FB950" font-size="11" font-weight="700">79.3%</text>
+<text class="mono" x="688.0" y="424.6" fill="#4ADE80" font-size="10.2" font-weight="700">(+2.5)</text>
+<rect x="750.0" y="78.0" width="700.0" height="398.0" rx="12" fill="#161B22" stroke="#30363D"/>
+<text x="768.0" y="106.0" fill="#F0F6FC" font-size="14" font-weight="700">2. 端到端融合 / 评论原生 Best F0.5（同档对照 · 全系 7 档 100% 普涨）</text>
+<line x1="938.0" y1="124.0" x2="938.0" y2="438.0" stroke="#242B35" stroke-width="1"/>
+<text class="mono" x="938.0" y="454.0" text-anchor="middle" fill="#8B949E" font-size="10.5">0%</text>
+<line x1="1022.4" y1="124.0" x2="1022.4" y2="438.0" stroke="#242B35" stroke-width="1"/>
+<text class="mono" x="1022.4" y="454.0" text-anchor="middle" fill="#8B949E" font-size="10.5">20%</text>
+<line x1="1106.8" y1="124.0" x2="1106.8" y2="438.0" stroke="#242B35" stroke-width="1"/>
+<text class="mono" x="1106.8" y="454.0" text-anchor="middle" fill="#8B949E" font-size="10.5">40%</text>
+<line x1="1191.2" y1="124.0" x2="1191.2" y2="438.0" stroke="#242B35" stroke-width="1"/>
+<text class="mono" x="1191.2" y="454.0" text-anchor="middle" fill="#8B949E" font-size="10.5">60%</text>
+<line x1="1275.6" y1="124.0" x2="1275.6" y2="438.0" stroke="#242B35" stroke-width="1"/>
+<text class="mono" x="1275.6" y="454.0" text-anchor="middle" fill="#8B949E" font-size="10.5">80%</text>
+<line x1="1360.0" y1="124.0" x2="1360.0" y2="438.0" stroke="#242B35" stroke-width="1"/>
+<text class="mono" x="1360.0" y="454.0" text-anchor="middle" fill="#8B949E" font-size="10.5">100%</text>
+<rect x="938.0" y="124.0" width="422.0" height="314.0" fill="none" stroke="#30363D"/>
+<text x="928.0" y="150.4" text-anchor="end" fill="#E6EDF3" font-size="11.5" font-weight="600">OjinjinNet-Pro (49.5MB)</text>
+<rect x="938.0" y="135.4" width="399.0" height="9" rx="3" fill="#475569"/>
+<rect x="938.0" y="147.4" width="401.3" height="12" rx="3.5" fill="#38BDF8"/>
+<text class="mono" x="1368.0" y="155.4" fill="#38BDF8" font-size="11" font-weight="700">95.1%</text>
+<text class="mono" x="1408.0" y="155.4" fill="#4ADE80" font-size="10.2" font-weight="700">(+0.5)</text>
+<text x="928.0" y="195.3" text-anchor="end" fill="#E6EDF3" font-size="11.5" font-weight="600">OjinjinNet-Std (16.9MB)</text>
+<rect x="938.0" y="180.3" width="376.9" height="9" rx="3" fill="#475569"/>
+<rect x="938.0" y="192.3" width="393.9" height="12" rx="3.5" fill="#38BDF8"/>
+<text class="mono" x="1368.0" y="200.3" fill="#38BDF8" font-size="11" font-weight="700">93.3%</text>
+<text class="mono" x="1408.0" y="200.3" fill="#4ADE80" font-size="10.2" font-weight="700">(+4.0)</text>
+<text x="928.0" y="240.1" text-anchor="end" fill="#E6EDF3" font-size="11.5" font-weight="600">OjinjinNet-Lite (7.05MB)</text>
+<rect x="938.0" y="225.1" width="386.9" height="9" rx="3" fill="#475569"/>
+<rect x="938.0" y="237.1" width="392.2" height="12" rx="3.5" fill="#38BDF8"/>
+<text class="mono" x="1368.0" y="245.1" fill="#38BDF8" font-size="11" font-weight="700">92.9%</text>
+<text class="mono" x="1408.0" y="245.1" fill="#4ADE80" font-size="10.2" font-weight="700">(+1.2)</text>
+<text x="928.0" y="285.0" text-anchor="end" fill="#E6EDF3" font-size="11.5" font-weight="600">OjinjinNet-Nano (1.22MB)</text>
+<rect x="938.0" y="270.0" width="380.6" height="9" rx="3" fill="#475569"/>
+<rect x="938.0" y="282.0" width="394.8" height="12" rx="3.5" fill="#38BDF8"/>
+<text class="mono" x="1368.0" y="290.0" fill="#38BDF8" font-size="11" font-weight="700">93.6%</text>
+<text class="mono" x="1408.0" y="290.0" fill="#4ADE80" font-size="10.2" font-weight="700">(+3.4)</text>
+<text x="928.0" y="329.9" text-anchor="end" fill="#E6EDF3" font-size="11.5" font-weight="600">Rules-Lite (29.1KB 0树JS)</text>
+<rect x="938.0" y="314.9" width="394.2" height="9" rx="3" fill="#475569"/>
+<rect x="938.0" y="326.9" width="400.8" height="12" rx="3.5" fill="#3FB950"/>
+<text class="mono" x="1368.0" y="334.9" fill="#3FB950" font-size="11" font-weight="700">95.0%</text>
+<text class="mono" x="1408.0" y="334.9" fill="#4ADE80" font-size="10.2" font-weight="700">(+1.6)</text>
+<text x="928.0" y="374.7" text-anchor="end" fill="#E6EDF3" font-size="11.5" font-weight="600">Rules-Compact (38.6KB JS)</text>
+<rect x="938.0" y="359.7" width="387.1" height="9" rx="3" fill="#475569"/>
+<rect x="938.0" y="371.7" width="393.0" height="12" rx="3.5" fill="#3FB950"/>
+<text class="mono" x="1368.0" y="379.7" fill="#3FB950" font-size="11" font-weight="700">93.1%</text>
+<text class="mono" x="1408.0" y="379.7" fill="#4ADE80" font-size="10.2" font-weight="700">(+1.4)</text>
+<text x="928.0" y="419.6" text-anchor="end" fill="#E6EDF3" font-size="11.5" font-weight="600">Rules-Pro (43.8KB JS)</text>
+<rect x="938.0" y="404.6" width="387.5" height="9" rx="3" fill="#475569"/>
+<rect x="938.0" y="416.6" width="390.9" height="12" rx="3.5" fill="#3FB950"/>
+<text class="mono" x="1368.0" y="424.6" fill="#3FB950" font-size="11" font-weight="700">92.6%</text>
+<text class="mono" x="1408.0" y="424.6" fill="#4ADE80" font-size="10.2" font-weight="700">(+0.8)</text>
+</svg>
