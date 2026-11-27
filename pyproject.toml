@@ -1,6 +1,6 @@
 [project]
 name = "ojinjinnet"
-version = "1.3.0"
+version = "1.4.0"
 description = "Ultra-lightweight on-device INT8 ONNX models & benchmark for detecting AI-generated comments in Chinese video/social communities."
 readme = "README.md"
 license = { file = "LICENSE" }
